@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Code Brown: Terminal Velocity — Instant Playable & Shareable Build</title>
+  <style>
+    :root {
+      --ink: #141413;
+      --paper: #f3efe6;
+      --tile: #e2ddd2;
+      --amber: #d69e2e;
+      --crimson: #c53030;
+      --emerald: #2f855a;
+      --blue: #3182ce;
+    }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body {
+      margin: 0;
+      background: #0d0d0c;
+      color: var(--paper);
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #phone-frame {
+      position: relative;
+      width: min(100vw, 430px);
+      height: min(100vh, 860px);
+      background: var(--tile);
+      border: 4px solid var(--paper);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .hud-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      background: rgba(20, 20, 19, 0.92);
+      border: 2.5px solid var(--paper);
+      border-radius: 10px;
+      padding: 9px 11px;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.14);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .bar-fill {
+      height: 100%;
+      transition: width 0.08s linear;
+    }
+    .badge-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #2d3748;
+      color: var(--paper);
+    }
+    #comic-banner {
+      position: absolute;
+      top: 128px;
+      left: 10px;
+      right: 10px;
+      background: var(--paper);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.65);
+      z-index: 12;
+      display: none;
+    }
+    #comic-Speaker {
+      color: var(--crimson);
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+    }
+    #comic-text {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    #interact-pill {
+      position: absolute;
+      bottom: 245px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20,20,19,0.92);
+      border: 1.5px solid var(--paper);
+      color: var(--paper);
+      padding: 5px 11px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      z-index: 11;
+      display: none;
+    }
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(12, 12, 12, 0.90);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+      z-index: 30;
+    }
+    .card {
+      width: 100%;
+      max-height: 92%;
+      overflow-y: auto;
+      background: var(--paper);
+      color: var(--ink);
+      border: 4px solid var(--ink);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.7);
+    }
+    .level-btn {
+      width: 100%;
+      text-align: left;
+      background: #fffdf8;
+      border: 2.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.1s;
+    }
+    .level-btn:hover { transform: translateY(-2px); background: #f7f0df; }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      margin: 4px;
+    }
+    .bidet-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 12px;
+    }
+    .bidet-key {
+      background: var(--ink);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      padding: 8px 4px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+    }
+    .bidet-key:hover { background: #2d3748; }
+  </style>
+</head>
+<body>
+  <div id="phone-frame">
+    <canvas id="game-canvas"></canvas>
+
+    <div class="hud-top" id="hud-panel" style="display:none;">
+      <div class="hud-row">
+        <span id="hud-level-label">GOI | BOWEL PRESSURE</span>
+        <span id="hud-timer-val">90.0s</span>
+        <button class="btn-primary" style="padding:2px 7px;font-size:10px;margin:0;" onclick="openMenu()">MAP</button>
+      </div>
+      <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
+      <div class="hud-row">
+        <span>SECURITY SUSPICION</span>
+        <span id="hud-susp-val">0%</span>
+      </div>
+      <div class="bar-track"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
+      <div class="badge-strip" id="hud-badges"></div>
+    </div>
+
+    <div id="comic-banner">
+      <div id="comic-Speaker">INNER MONOLOGUE</div>
+      <div id="comic-text"></div>
+    </div>
+
+    <div id="interact-pill">RELEASE THUMB: INTERACT</div>
+
+    <!-- Boarding Pass Level Select Modal -->
+    <div class="modal-overlay" id="menu-modal">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:1px;">BOARDING PASS SELECTOR</span>
+          <label style="font-size:10px;font-weight:800;cursor:pointer;">
+            <input type="checkbox" id="safe-title-toggle" onchange="toggleSafeTitle()" /> Store-Safe Title
+          </label>
+        </div>
+        <h2 id="game-title-heading" style="margin:4px 0 4px 0;font-size:18px;">I Need to Take a Sh!t: Airport Dash</h2>
+        <div style="font-size:11px;font-weight:700;margin-bottom:8px;">
+          360° Center Thumb Dial (Drag) • Double-Tap Dial or [SPACE] to Clench • Pause in Zone (0.6s) to Interact
+        </div>
+        <div id="level-list"></div>
+      </div>
+    </div>
+
+    <!-- Level 5 Haneda 12-Button Electronic Bidet Boss Modal -->
+    <div class="modal-overlay" id="bidet-modal" style="display:none;">
+      <div class="card">
+        <div style="color:var(--crimson);font-weight:900;font-size:15px;text-align:center;">FINAL BOSS: HANEDA WASHLET-9000</div>
+        <div id="bidet-timer-label" style="font-weight:900;font-size:12px;text-align:center;margin-top:4px;">
+          ELECTRONIC LID LOCKED! PRESS [開 / OPEN] IN 5.0s!
+        </div>
+        <div class="bidet-grid" id="bidet-grid"></div>
+      </div>
+    </div>
+
+    <!-- End of Run Slapstick Modal -->
+    <div class="modal-overlay" id="outcome-modal" style="display:none;">
+      <div class="card" style="text-align:center;">
+        <h2 id="outcome-title" style="margin:4px 0;">THRONE SECURED!</h2>
+        <div id="outcome-sub" style="font-weight:800;font-size:12px;margin-bottom:10px;"></div>
+        <p id="outcome-bark" style="font-style:italic;font-weight:700;font-size:13px;"></p>
+        <div id="outcome-stats" style="font-weight:900;font-size:13px;margin:10px 0;"></div>
+        <div>
+          <button class="btn-primary" onclick="retryCurrentLevel()">RETRY TERMINAL</button>
+          <button class="btn-primary" onclick="nextOrMenu()">NEXT / TERMINAL MAP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Canonical 5-Level Data & Dialogues (Mirrors assets/data/*.json & assets/maps/*.json) ---
+    const DIALOGUES = {
+      spawn_goi: ["INNER MONOLOGUE", "That second prawn vindaloo by the beach was a tactical error. T-minus ninety seconds before I make international news."],
+      spawn_jfk: ["INNER MONOLOGUE", "Terminal 4 is half a mile long and every TSA agent is staring at my sweat-soaked forehead."],
+      spawn_lhr: ["INNER MONOLOGUE", "A lukewarm Heathrow steak-and-kidney pie has declared war on my lower intestine. Mind the gap—and my dignity."],
+      spawn_sin: ["INNER MONOLOGUE", "Who puts a forty-meter roaring indoor waterfall inside a transit hub? Even the ficus trees know I'm clenching."],
+      spawn_dxb: ["INNER MONOLOGUE", "Duty-free gauntlet, an Automated People Mover, and a Japanese robo-toilet standing between me and dishonor."],
+      hit_wet_floor: ["SLIP HAZARD", "Mopped floor! Wet tiles! One slip and I become a human curling stone of regret!"],
+      saved_flipflops: ["TACTICAL GEAR", "Duty-free rubber flip-flops equipped. Ugly as sin, grip like snow tires."],
+      spotted_waddling: ["SECURITY ALERT", "Act natural. Nothing says 'innocent traveler' like sweating through a linen shirt and walking like a crab."],
+      locked_stall: ["OUT OF ORDER", "Locked. 'Maintenance Required.' Brother, you haven't seen maintenance required yet."],
+      bribe_mints: ["CUSTODIAN BRIBED", "Slipped the custodian a tin of imported spearmint. The yellow tape parts like the Red Sea."],
+      distract_triggered: ["SABOTAGE", "Distraction deployed! Custodian abandoned the mop barricade to investigate!"],
+      spicy_pretzel: ["BAD DECISION", "Free sample jalapeño pretzel?! Adrenaline speed +25%, colon clock -8 seconds!"],
+      tsa_patdown: ["TSA BOTTLENECK", "'Sir, step onto the mat.' 6-second pat-down while the bowel clock ticks!"],
+      tsa_bypass: ["FAST-TRACK", "Flashed the forged Fast-Track sticker. Bypassed pat-down with zero delay!"],
+      waterfall_warn: ["PSYCHOLOGICAL HAZARD", "SHHHHHH—roaring Changi waterfall! Cramp Wave frequency accelerated by 1.5x!"],
+      perfume_stun: ["SENSORY AMBUSH", "Spritzed in the eyes by an aggressive Eau de Cologne promoter! Stunned for 2 seconds!"]
+    };
+
+    const LEVELS = [
+      {
+        id: 1, iata: "GOI", name: "Goa Dabolim International Airport",
+        sub: "Integrated Terminal Enclave • Surfboard Bags & Mop Barricade",
+        baseTimer: 90, crampInterval: 25, spawnBark: "spawn_goi",
+        winBark: "Sweet ceramic salvation. Never trust a beach shack buffet before boarding.",
+        world: { w: 20, h: 38 }, spawn: { x: 10, y: 35 },
+        walls: [
+          { x: 0, y: 0, w: 1, h: 38 }, { x: 19, y: 0, w: 1, h: 38 },
+          { x: 0, y: 0, w: 20, h: 1 }, { x: 0, y: 37, w: 20, h: 1 },
+          { x: 3.5, y: 29, w: 5.5, h: 1.6, label: "Surfboard Bags" },
+          { x: 11.5, y: 25.5, w: 5.0, h: 2.2, label: "Vindaloo Air Desk" },
+          { x: 1, y: 17.5, w: 6.5, h: 1.2, label: "CISF Barrier" },
+          { x: 12.5, y: 17.5, w: 6.5, h: 1.2, label: "CISF Barrier" },
+          { x: 5.5, y: 10.5, w: 4.2, h: 2.0, label: "Cashew Kiosk" },
+          { x: 13.0, y: 7.0, w: 6.0, h: 1.0, label: "Restroom Alcove" }
+        ],
+        guards: [
+          { id: "g1", type: "patrol", speed: 2.2, pts: [{x:4,y:23},{x:15,y:23}] },
+          { id: "g2", type: "tsa", speed: 0, angle: 1.57, pts: [{x:9.8,y:17.5}] },
+          { id: "g3", type: "patrol", speed: 2.5, pts: [{x:3.5,y:7.5},{x:11.5,y:7.5},{x:11.5,y:13.5},{x:3.5,y:13.5}] }
+        ],
+        hazards: [
+          { id: "h1", x: 14.5, y: 29.0, r: 2.1, blocks: true, label: "Cleaning Barricade" },
+          { id: "h2", x: 9.8, y: 14.0, r: 1.9, blocks: false, label: "Wet Floor" }
+        ],
+        props: [
+          { id: "p1", type: "item", item: "breath_mints", x: 3.0, y: 32.5, label: "Grab Breath Mints", bark: "bribe_mints" },
+          { id: "p2", type: "distract", target: "h1", x: 11.5, y: 31.0, label: "Kick Trash Bin (Lure Janitor)", bark: "distract_triggered" },
+          { id: "p3", type: "item", item: "rubber_flipflops", x: 16.5, y: 21.5, label: "Equip Rubber Flip-Flops", bark: "saved_flipflops" },
+          { id: "p4", type: "item", item: "fast_track_pass", x: 2.8, y: 20.5, label: "Grab Fast-Track Sticker", bark: "tsa_bypass" },
+          { id: "p5", type: "cover", x: 7.5, y: 11.5, label: "Read Goa Herald (-25% Suspicion/s)" }
+        ],
+        stalls: [
+          { x: 17.0, y: 29.0, open: false, label: "Arrival Stall (Out of Order)" },
+          { x: 14.2, y: 3.0, open: false, label: "Departure Stall #1 (Occupied)" },
+          { x: 17.2, y: 3.0, open: true, label: "Departure Stall #2 (OPEN THRONE!)" }
+        ],
+        zones: []
+      },
+      {
+        id: 2, iata: "JFK", name: "New York JFK (Terminal 4)",
+        sub: "Luxury Retail Concourse • Segway Patrols & TSA Belt Check",
+        baseTimer: 120, crampInterval: 20, spawnBark: "spawn_jfk",
+        winBark: "First-class porcelain on a coach-class ticket. Worth every forged lounge pass.",
+        world: { w: 22, h: 46 }, spawn: { x: 11, y: 43 },
+        walls: [
+          { x: 0, y: 0, w: 1, h: 46 }, { x: 21, y: 0, w: 1, h: 46 },
+          { x: 0, y: 0, w: 22, h: 1 }, { x: 0, y: 45, w: 22, h: 1 },
+          { x: 1, y: 33, w: 7.5, h: 1.4, label: "TSA Stanchion" },
+          { x: 13.5, y: 33, w: 7.5, h: 1.4, label: "TSA X-Ray" },
+          { x: 3, y: 23, w: 5, h: 2.5, label: "5th Ave Duty-Free" },
+          { x: 14, y: 23, w: 5, h: 2.5, label: "Hudson Pretzels" },
+          { x: 1, y: 11.5, w: 8, h: 1.2, label: "VIP Lounge Glass" },
+          { x: 12.5, y: 13.5, w: 4, h: 2.0, label: "Info Pillar" }
+        ],
+        guards: [
+          { id: "j1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11,y:33}] },
+          { id: "j2", type: "segway", speed: 4.2, pts: [{x:3.5,y:28.5},{x:18.5,y:28.5}] },
+          { id: "j3", type: "segway", speed: 4.3, pts: [{x:10.5,y:29},{x:10.5,y:15}] },
+          { id: "j4", type: "patrol", speed: 2.6, pts: [{x:12,y:6.5},{x:19,y:6.5}] }
+        ],
+        hazards: [
+          { id: "jh1", x: 6.5, y: 38.0, r: 2.0, blocks: false, label: "Iced Latte Spill" },
+          { id: "jh2", x: 15.5, y: 8.5, r: 2.2, blocks: true, label: "Concourse B Mop Cart" }
+        ],
+        props: [
+          { id: "jp1", type: "item", item: "fast_track_pass", x: 18, y: 39.5, label: "Grab CLEAR Fast-Track Pass", bark: "tsa_bypass" },
+          { id: "jp2", type: "pretzel", x: 16.5, y: 26.5, label: "Spicy Jalapeño Pretzel (+25% Spd, -8s)", bark: "spicy_pretzel" },
+          { id: "jp3", type: "item", item: "rubber_flipflops", x: 4.5, y: 26.5, label: "I-Heart-NY Rubber Slides", bark: "saved_flipflops" },
+          { id: "jp4", type: "distract", target: "jh2", x: 11.5, y: 11.0, label: "Toss Duty-Free Coupon (Lure Mop)", bark: "distract_triggered" },
+          { id: "jp5", type: "cover", x: 4.0, y: 15.5, label: "Hide at Newsstand (-25% Suspicion/s)" }
+        ],
+        stalls: [
+          { x: 3.0, y: 3.5, open: false, label: "VIP Lounge Stall (Decoy: Renovating!)" },
+          { x: 15.0, y: 3.0, open: false, label: "Gate B42 Stall #1 (Locked)" },
+          { x: 18.8, y: 3.0, open: true, label: "Gate B42 Stall #2 (OPEN THRONE!)" }
+        ],
+        zones: []
+      },
+      {
+        id: 3, iata: "LHR", name: "London Heathrow (Terminal 5)",
+        sub: "Concourses A/B/C • Reversing Walkways & Transit Shuttle Doors",
+        baseTimer: 135, crampInterval: 18, spawnBark: "spawn_lhr",
+        winBark: "God save the King, and God save whoever left a spare roll in Concourse C.",
+        world: { w: 22, h: 52 }, spawn: { x: 11, y: 49 },
+        walls: [
+          { x: 0, y: 0, w: 1, h: 52 }, { x: 21, y: 0, w: 1, h: 52 },
+          { x: 0, y: 0, w: 22, h: 1 }, { x: 0, y: 51, w: 22, h: 1 },
+          { x: 2.5, y: 42, w: 9.5, h: 1.5, label: "Polite British Queue" },
+          { x: 1, y: 33.5, w: 7, h: 1.4, label: "100ml Baggie Desk" },
+          { x: 14, y: 33.5, w: 7, h: 1.4, label: "Border Stanchion" },
+          { x: 1, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" },
+          { x: 13.5, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" }
+        ],
+        guards: [
+          { id: "l1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11,y:33.5}] },
+          { id: "l2", type: "segway", speed: 4.2, pts: [{x:11,y:29},{x:11,y:20}] },
+          { id: "l3", type: "patrol", speed: 2.7, pts: [{x:3,y:13.5},{x:19,y:13.5}] },
+          { id: "l4", type: "patrol", speed: 2.4, pts: [{x:4,y:6.5},{x:18,y:6.5}] }
+        ],
+        hazards: [
+          { id: "lh1", x: 11, y: 26, r: 2.1, blocks: false, label: "Spilled Earl Grey" },
+          { id: "lh2", x: 16.5, y: 9.0, r: 2.2, blocks: true, label: "Concourse C Mop Cart" }
+        ],
+        props: [
+          { id: "lp1", type: "item", item: "fast_track_pass", x: 18.5, y: 46.5, label: "Royal Fast-Track Badge", bark: "tsa_bypass" },
+          { id: "lp2", type: "item", item: "rubber_flipflops", x: 3.0, y: 30.0, label: "Union Jack Rubber Wellies", bark: "saved_flipflops" },
+          { id: "lp3", type: "distract", target: "lh2", x: 6.0, y: 10.5, label: "Tip Newspaper Rack (Lure Mop)", bark: "distract_triggered" }
+        ],
+        stalls: [
+          { x: 3.0, y: 3.0, open: false, label: "Cubicle #1 (Jammed)" },
+          { x: 18.5, y: 3.0, open: true, label: "Concourse C Cubicle #3 (OPEN THRONE!)" }
+        ],
+        zones: [
+          { type: "walkway", x: 15.0, y: 21.5, w: 3.2, h: 9.0, dy: -2.8, label: "Reversing Travelator" },
+          { type: "shuttle", x: 8.5, y: 17.5, w: 5.0, h: 1.5, openSec: 5, closedSec: 3, label: "T5 Transit Shuttle Gate" }
+        ]
+      },
+      {
+        id: 4, iata: "SIN", name: "Singapore Changi (Jewel)",
+        sub: "Rain Vortex Link Bridge • 1.5x Waterfall Cramp Hazard & Robo-Scrubbers",
+        baseTimer: 150, crampInterval: 18, spawnBark: "spawn_sin",
+        winBark: "Cleanest restroom in Asia, and I made it with seconds of structural integrity left.",
+        world: { w: 24, h: 54 }, spawn: { x: 12, y: 51 },
+        walls: [
+          { x: 0, y: 0, w: 1, h: 54 }, { x: 23, y: 0, w: 1, h: 54 },
+          { x: 0, y: 0, w: 24, h: 1 }, { x: 0, y: 53, w: 24, h: 1 },
+          { x: 3.5, y: 43, w: 7, h: 1.6, label: "Selfie Stick Mob" },
+          { x: 9.5, y: 24.5, w: 5, h: 5, label: "Rain Vortex Basin" },
+          { x: 13.5, y: 16, w: 6.5, h: 1.6, label: "Tripod Blockade" }
+        ],
+        guards: [
+          { id: "s1", type: "segway", speed: 4.3, pts: [{x:3,y:38},{x:20,y:38}] },
+          { id: "s2", type: "patrol", speed: 2.6, pts: [{x:4,y:32},{x:4,y:20}] },
+          { id: "s3", type: "patrol", speed: 2.6, pts: [{x:20,y:20},{x:20,y:32}] },
+          { id: "s4", type: "patrol", speed: 2.8, pts: [{x:4,y:6.5},{x:20,y:6.5}] }
+        ],
+        hazards: [
+          { id: "sh1", x: 14, y: 46, r: 2.1, blocks: false, robo: true, label: "Robo-Scrubber #A1" },
+          { id: "sh2", x: 17.5, y: 8.5, r: 2.2, blocks: true, label: "Jewel Restroom Custodian" }
+        ],
+        props: [
+          { id: "sp1", type: "item", item: "rubber_flipflops", x: 19.5, y: 48, label: "Botanical Non-Slip Sandals", bark: "saved_flipflops" },
+          { id: "sp2", type: "item", item: "breath_mints", x: 20.5, y: 26.5, label: "Pandan Breath Mints", bark: "bribe_mints" },
+          { id: "sp3", type: "distract", target: "sh2", x: 11.5, y: 10.0, label: "Kaya Toast Voucher Drop", bark: "distract_triggered" },
+          { id: "sp4", type: "cover", x: 11.5, y: 19.0, label: "Bamboo Fern Alcove (-25% Suspicion/s)" }
+        ],
+        stalls: [
+          { x: 3.5, y: 3.0, open: false, label: "Skytrain Stall (Occupied)" },
+          { x: 19.5, y: 3.0, open: true, label: "Jewel Sanctuary Suite (OPEN THRONE!)" }
+        ],
+        zones: [
+          { type: "waterfall", x: 12.0, y: 27.0, r: 7.5, label: "Rain Vortex 1.5x Cramp Zone" }
+        ]
+      },
+      {
+        id: 5, iata: "DXB-HND", name: "Dubai (T3) -> Tokyo Haneda (T3) Finale",
+        sub: "Perfume Spritzers, APM Train Doors & 12-Button Bidet Boss",
+        baseTimer: 180, crampInterval: 16, spawnBark: "spawn_dxb",
+        winBark: "Heated seat. Warm cedar mist. Gentle birdsong chime. Porcelain nirvana achieved.",
+        world: { w: 24, h: 60 }, spawn: { x: 12, y: 57 },
+        walls: [
+          { x: 0, y: 0, w: 1, h: 60 }, { x: 23, y: 0, w: 1, h: 60 },
+          { x: 0, y: 0, w: 24, h: 1 }, { x: 0, y: 59, w: 24, h: 1 },
+          { x: 4, y: 49, w: 6.5, h: 1.8, label: "Gold Bullion Kiosk" },
+          { x: 1, y: 29, w: 8, h: 1.6, label: "APM Platform" },
+          { x: 15, y: 29, w: 8, h: 1.6, label: "APM Platform" },
+          { x: 1, y: 18, w: 7.5, h: 1.4, label: "HND Customs" },
+          { x: 15.5, y: 18, w: 7.5, h: 1.4, label: "HND Customs" }
+        ],
+        guards: [
+          { id: "d1", type: "segway", speed: 4.5, pts: [{x:3,y:53},{x:20.5,y:53}] },
+          { id: "d2", type: "patrol", speed: 2.8, pts: [{x:3,y:38},{x:20.5,y:38}] },
+          { id: "d3", type: "tsa", speed: 0, angle: 1.57, pts: [{x:12,y:18}] },
+          { id: "d4", type: "segway", speed: 4.4, pts: [{x:3.5,y:6.5},{x:20.5,y:6.5}] }
+        ],
+        hazards: [
+          { id: "dh1", x: 12, y: 46, r: 2.1, blocks: false, label: "Polished Marble Slip" },
+          { id: "dh2", x: 18, y: 8.5, r: 2.2, blocks: true, label: "Haneda VIP Attendant" }
+        ],
+        props: [
+          { id: "dp1", type: "item", item: "rubber_flipflops", x: 20, y: 55, label: "Gold Hotel Slippers", bark: "saved_flipflops" },
+          { id: "dp2", type: "item", item: "fast_track_pass", x: 3, y: 35, label: "APEC Fast-Track Card", bark: "tsa_bypass" },
+          { id: "dp3", type: "item", item: "breath_mints", x: 20, y: 24, label: "Matcha Breath Mints", bark: "bribe_mints" },
+          { id: "dp4", type: "distract", target: "dh2", x: 5, y: 9.5, label: "Tokyo Banana Restock Shout", bark: "distract_triggered" }
+        ],
+        stalls: [
+          { x: 3.5, y: 3.0, open: false, label: "HND Stall #1 (Firmware Updating)" },
+          { x: 20.0, y: 3.0, open: true, bidetBoss: true, label: "WASHLET-9000 Master Suite (BOSS LOCK!)" }
+        ],
+        zones: [
+          { type: "perfume", x: 7.5, y: 43.0, r: 2.3, cd: 0, label: "Oud Perfume Spritzer (2s Stun)" },
+          { type: "perfume", x: 16.5, y: 36.0, r: 2.3, cd: 0, label: "Cologne Spritzer (2s Stun)" },
+          { type: "shuttle", x: 9.0, y: 29.0, w: 6.0, h: 1.6, openSec: 4.5, closedSec: 3.0, label: "DXB-HND APM Train Doors" }
+        ]
+      }
+    ];
+
+    const BIDET_BUTTONS = [
+      { k: "警報", s: "NURSE ALARM", ok: false },
+      { k: "強洗", s: "TURBO JET", ok: false },
+      { k: "音姫", s: "OTOHIME", ok: false },
+      { k: "乾燥", s: "WARM DRY", ok: false },
+      { k: "脱臭", s: "DEODORIZE", ok: false },
+      { k: "便座", s: "SEAT 45°C", ok: false },
+      { k: "脈動", s: "PULSATE", ok: false },
+      { k: "開 / OPEN", s: "UNLOCK LID", ok: true },
+      { k: "ビデ", s: "LADY MIST", ok: false },
+      { k: "水勢+", s: "MAX PSI", ok: false },
+      { k: "洗浄", s: "NOZZLE", ok: false },
+      { k: "非常", s: "SECURITY", ok: false }
+    ];
+
+    // --- Procedural WebAudio Synthesizer ---
+    let audioCtx = null;
+    function playTone(freq, dur, type = "sawtooth", gainVal = 0.08) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (_) {}
+    }
+
+    // --- Runtime State ---
+    const canvas = document.getElementById("game-canvas");
+    const ctx = canvas.getContext("2d");
+    const PPM = 34; // Pixels per meter
+    let state = "menu"; // menu | playing | bidet | over
+    let activeLvl = null;
+    let player = null;
+    let timerSec = 90, crampSec = 25, clenchSec = 0, clenchCd = 0, suspicion = 0;
+    let worldClock = 0, bannerClock = 0, bidetClock = 5.0;
+    let dial = { active: false, dx: 0, dy: 0, mag: 0, angle: -1.57, tier: "idle", lastTapMs: 0 };
+    let bestRecords = {};
+
+    function resizeCanvas() {
+      const rect = document.getElementById("phone-frame").getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function toggleSafeTitle() {
+      const safe = document.getElementById("safe-title-toggle").checked;
+      document.getElementById("game-title-heading").textContent =
+        safe ? "Code Brown: Terminal Velocity" : "I Need to Take a Sh!t: Airport Dash";
+    }
+
+    function renderLevelMenu() {
+      const container = document.getElementById("level-list");
+      container.innerHTML = "";
+      LEVELS.forEach(lvl => {
+        const best = bestRecords[lvl.id] ? ` • Best: ${bestRecords[lvl.id].toFixed(1)}s left` : "";
+        const btn = document.createElement("button");
+        btn.className = "level-btn";
+        btn.innerHTML = `
+          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:13px;">
+            <span>LEVEL ${lvl.id}: ${lvl.iata} — ${lvl.name}</span>
+            <span style="color:var(--crimson);">${lvl.baseTimer}s</span>
+          </div>
+          <div style="font-size:11px;margin-top:3px;">${lvl.sub}${best}</div>
+        `;
+        btn.onclick = () => startLevel(lvl.id);
+        container.appendChild(btn);
+      });
+    }
+
+    function openMenu() {
+      state = "menu";
+      document.getElementById("menu-modal").style.display = "flex";
+      document.getElementById("hud-panel").style.display = "none";
+      document.getElementById("bidet-modal").style.display = "none";
+      document.getElementById("outcome-modal").style.display = "none";
+      renderLevelMenu();
+    }
+
+    function startLevel(id) {
+      const template = LEVELS.find(l => l.id === id) || LEVELS[0];
+      activeLvl = JSON.parse(JSON.stringify(template));
+      activeLvl.guards.forEach(g => {
+        g.x = g.pts[0].x;
+        g.y = g.pts[0].y;
+        g.wpIdx = g.pts.length > 1 ? 1 : 0;
+        g.angle = g.angle || 0;
+        g.patCd = 0;
+      });
+      activeLvl.props.forEach(p => { p.prog = 0; p.done = false; });
+      activeLvl.stalls.forEach(s => { s.prog = 0; s.inspected = false; });
+
+      player = {
+        x: activeLvl.spawn.x,
+        y: activeLvl.spawn.y,
+        r: 0.42,
+        flipflops: false,
+        items: [],
+        slipSec: 0, slipVx: 0, slipVy: 0,
+        stunSec: 0, patSec: 0, boostSec: 0,
+        inCover: false,
+        sweat: [],
+        walkPhase: 0
+      };
+      timerSec = activeLvl.baseTimer;
+      crampSec = activeLvl.crampInterval;
+      clenchSec = 0;
+      clenchCd = 0;
+      suspicion = 0;
+      worldClock = 0;
+      state = "playing";
+
+      document.getElementById("menu-modal").style.display = "none";
+      document.getElementById("outcome-modal").style.display = "none";
+      document.getElementById("bidet-modal").style.display = "none";
+      document.getElementById("hud-panel").style.display = "block";
+      showBanner(activeLvl.spawnBark);
+      playTone(95, 0.35, "sawtooth");
+    }
+
+    function showBanner(key) {
+      const entry = DIALOGUES[key];
+      if (!entry) return;
+      document.getElementById("comic-Speaker").textContent = entry[0];
+      document.getElementById("comic-text").textContent = `"${entry[1]}"`;
+      document.getElementById("comic-banner").style.display = "block";
+      bannerClock = 3.2;
+    }
+
+    function triggerClench() {
+      if (state !== "playing" || clenchSec > 0 || clenchCd > 0) return;
+      clenchSec = 1.5;
+      clenchCd = 12.0;
+      crampSec += 5.0;
+      playTone(320, 0.18, "triangle");
+    }
+
+    // --- Center Thumb Dial Input (X: 50%, Y: 78% of screen height) ---
+    function getDialCenter() {
+      return { x: canvas.width * 0.5, y: canvas.height * 0.78, maxR: 72 };
+    }
+
+    function updateDialVector(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      const c = getDialCenter();
+      const rawDx = px - c.x;
+      const rawDy = py - c.y;
+      const dist = Math.hypot(rawDx, rawDy);
+      const clamped = Math.min(dist, c.maxR);
+      const mag = clamped / c.maxR;
+      const angle = Math.atan2(rawDy, rawDx);
+
+      dial.dx = Math.cos(angle) * clamped;
+      dial.dy = Math.sin(angle) * clamped;
+      if (mag < 0.15) {
+        dial.mag = 0;
+        dial.tier = "idle";
+      } else if (mag < 0.65) {
+        dial.mag = mag;
+        dial.angle = angle;
+        dial.tier = "walk";
+      } else {
+        dial.mag = mag;
+        dial.angle = angle;
+        dial.tier = "sprint";
+      }
+    }
+
+    canvas.addEventListener("pointerdown", e => {
+      const now = performance.now();
+      if (now - dial.lastTapMs < 320) {
+        triggerClench();
+        dial.lastTapMs = 0;
+      } else {
+        dial.lastTapMs = now;
+      }
+      dial.active = true;
+      updateDialVector(e.clientX, e.clientY);
+    });
+    window.addEventListener("pointermove", e => {
+      if (dial.active) updateDialVector(e.clientX, e.clientY);
+    });
+    window.addEventListener("pointerup", () => {
+      dial.active = false;
+      dial.dx = 0; dial.dy = 0; dial.mag = 0; dial.tier = "idle";
+    });
+    window.addEventListener("keydown", e => {
+      if (e.code === "Space") triggerClench();
+    });
+
+    // --- Raycast Segment vs AABB Occlusion Check ---
+    function segmentHitsRect(x0, y0, x1, y1, rx, ry, rw, rh) {
+      let t0 = 0, t1 = 1;
+      const dx = x1 - x0, dy = y1 - y0;
+      const p = [-dx, dx, -dy, dy];
+      const q = [x0 - rx, (rx + rw) - x0, y0 - ry, (ry + rh) - y0];
+      for (let i = 0; i < 4; i++) {
+        if (Math.abs(p[i]) < 1e-8) {
+          if (q[i] < 0) return false;
+        } else {
+          const t = q[i] / p[i];
+          if (p[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+          else { if (t < t0) return false; if (t < t1) t1 = t; }
+        }
+      }
+      return t0 <= t1;
+    }
+
+    function openBidetModal() {
+      state = "bidet";
+      bidetClock = 5.0;
+      const grid = document.getElementById("bidet-grid");
+      grid.innerHTML = "";
+      BIDET_BUTTONS.forEach(b => {
+        const btn = document.createElement("button");
+        btn.className = "bidet-key";
+        btn.innerHTML = `<div style="font-weight:900;font-size:13px;">${b.k}</div><div style="font-size:8.5px;color:#ccc;">${b.s}</div>`;
+        btn.onclick = () => {
+          document.getElementById("bidet-modal").style.display = "none";
+          if (b.ok) finishLevel(true);
+          else finishLevel(false, "WRONG BUTTON: EMERGENCY SIREN & TURBO GEYSER!", "That wasn't 'Open Lid'—that was 'Medical Alert & Max Pressure Ceiling Jet.'");
+        };
+        grid.appendChild(btn);
+      });
+      document.getElementById("bidet-modal").style.display = "flex";
+    }
+
+    function finishLevel(won, failTitle = "", failBark = "") {
+      state = "over";
+      document.getElementById("outcome-modal").style.display = "flex";
+      const tEl = document.getElementById("outcome-title");
+      tEl.textContent = won ? "THRONE SECURED!" : failTitle;
+      tEl.style.color = won ? "var(--emerald)" : "var(--crimson)";
+      document.getElementById("outcome-sub").textContent = `${activeLvl.iata} — ${activeLvl.name}`;
+      document.getElementById("outcome-bark").textContent = `"${won ? activeLvl.winBark : failBark}"`;
+      document.getElementById("outcome-stats").textContent = won
+        ? `Bowel Clock Remaining: ${timerSec.toFixed(1)}s`
+        : `Remaining Clock at Incident: ${timerSec.toFixed(1)}s`;
+      if (won) {
+        bestRecords[activeLvl.id] = Math.max(bestRecords[activeLvl.id] || 0, timerSec);
+        playTone(520, 0.35, "sine");
+      } else {
+        playTone(75, 0.55, "sawtooth");
+      }
+    }
+
+    function retryCurrentLevel() {
+      if (activeLvl) startLevel(activeLvl.id);
+    }
+
+    function nextOrMenu() {
+      if (activeLvl && activeLvl.id < LEVELS.length && document.getElementById("outcome-title").textContent === "THRONE SECURED!") {
+        startLevel(activeLvl.id + 1);
+      } else {
+        openMenu();
+      }
+    }
+
+    // --- Main Simulation Tick ---
+    let lastTime = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (state === "bidet") {
+        bidetClock -= dt;
+        document.getElementById("bidet-timer-label").textContent =
+          `ELECTRONIC LID LOCKED! PRESS [開 / OPEN] IN ${Math.max(0, bidetClock).toFixed(1)}s!`;
+        if (bidetClock <= 0) {
+          document.getElementById("bidet-modal").style.display = "none";
+          finishLevel(false, "CODE BROWN AT THE FINISH LINE", "Five seconds expired staring at kanji buttons while the lid stayed locked.");
+        }
+      } else if (state === "playing" && activeLvl) {
+        updateSimulation(dt);
+        renderWorld();
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function updateSimulation(dt) {
+      worldClock += dt;
+      if (bannerClock > 0) {
+        bannerClock -= dt;
+        if (bannerClock <= 0) document.getElementById("comic-banner").style.display = "none";
+      }
+      if (clenchCd > 0) clenchCd = Math.max(0, clenchCd - dt);
+      if (player.boostSec > 0) player.boostSec = Math.max(0, player.boostSec - dt);
+      if (player.stunSec > 0) player.stunSec = Math.max(0, player.stunSec - dt);
+      if (player.patSec > 0) player.patSec = Math.max(0, player.patSec - dt);
+
+      // Build dynamic colliders (walls + active mop barricades + closed shuttle doors)
+      const colliders = activeLvl.walls.slice();
+      activeLvl.hazards.forEach(h => {
+        if (h.robo) {
+          h.baseX = h.baseX || h.x;
+          h.x = h.baseX + Math.sin(worldClock * 1.5) * 2.5;
+        }
+        if (h.blocks && !h.cleared) {
+          if (Math.hypot(player.x - h.x, player.y - h.y) <= h.r + 0.7 && player.items.includes("breath_mints")) {
+            player.items = player.items.filter(i => i !== "breath_mints");
+            h.cleared = true;
+            showBanner("bribe_mints");
+          } else {
+            colliders.push({ x: h.x - h.r * 0.6, y: h.y - h.r * 0.6, w: h.r * 1.2, h: h.r * 1.2 });
+          }
+        }
+      });
+
+      let conveyorVy = 0;
+      let inWaterfall = false;
+      activeLvl.zones.forEach(z => {
+        if (z.type === "shuttle") {
+          const cycle = z.openSec + z.closedSec;
+          z.closed = (worldClock % cycle) >= z.openSec;
+          if (z.closed) colliders.push({ x: z.x, y: z.y, w: z.w, h: z.h });
+        } else if (z.type === "walkway") {
+          const sign = Math.floor(worldClock / 6) % 2 === 0 ? 1 : -1;
+          z.curDy = z.dy * sign;
+          if (player.x >= z.x && player.x <= z.x + z.w && player.y >= z.y && player.y <= z.y + z.h) {
+            conveyorVy = z.curDy;
+          }
+        } else if (z.type === "waterfall") {
+          if (Math.hypot(player.x - z.x, player.y - z.y) <= z.r) {
+            if (!player.warnedWater) { showBanner("waterfall_warn"); player.warnedWater = true; }
+            inWaterfall = true;
+          }
+        } else if (z.type === "perfume") {
+          z.cd = Math.max(0, (z.cd || 0) - dt);
+          if (z.cd <= 0 && Math.hypot(player.x - z.x, player.y - z.y) <= z.r) {
+            z.cd = 6.0;
+            player.stunSec = 2.0;
+            showBanner("perfume_stun");
+          }
+        }
+      });
+
+      // Player velocity
+      let vx = 0, vy = 0;
+      if (player.slipSec > 0) {
+        player.slipSec = Math.max(0, player.slipSec - dt);
+        vx = player.slipVx; vy = player.slipVy;
+      } else if (clenchSec > 0 || player.stunSec > 0 || player.patSec > 0) {
+        vx = 0; vy = 0;
+      } else if (dial.tier !== "idle") {
+        let spd = dial.tier === "sprint" ? 5.5 : 3.2;
+        if (player.boostSec > 0) spd *= 1.25;
+        vx = Math.cos(dial.angle) * spd;
+        vy = Math.sin(dial.angle) * spd;
+        player.walkPhase += dt * (dial.tier === "sprint" ? 14 : 8);
+      }
+      vy += conveyorVy;
+
+      if (Math.hypot(vx, vy) > 0.01) {
+        player.inCover = false;
+        const nx = player.x + vx * dt;
+        if (!hitsAny(nx, player.y, player.r, colliders)) player.x = nx;
+        const ny = player.y + vy * dt;
+        if (!hitsAny(player.x, ny, player.r, colliders)) player.y = ny;
+      }
+
+      // Wet floor slip check
+      activeLvl.hazards.forEach(h => {
+        if (!h.cleared && Math.hypot(player.x - h.x, player.y - h.y) <= h.r) {
+          if (!player.flipflops && player.slipSec <= 0 && Math.hypot(vx, vy) > 0.2) {
+            player.slipSec = 2.0;
+            const a = dial.angle || -1.57;
+            player.slipVx = Math.cos(a) * 6.0;
+            player.slipVy = Math.sin(a) * 6.0;
+            showBanner("hit_wet_floor");
+          }
+        }
+      });
+
+      // Bowel Timer & Cramp Wave
+      if (clenchSec > 0) {
+        clenchSec = Math.max(0, clenchSec - dt);
+      } else {
+        const drain = dial.tier === "sprint" ? 1.25 : 1.0;
+        timerSec = Math.max(0, timerSec - dt * drain);
+        crampSec -= dt * (inWaterfall ? 1.5 : 1.0);
+        if (crampSec <= 0) {
+          crampSec = activeLvl.crampInterval;
+          playTone(80, 0.3, "sawtooth");
+          if (dial.tier === "sprint") timerSec = Math.max(0, timerSec - 3.0);
+        }
+      }
+      if (timerSec <= 0) {
+        finishLevel(false, "CODE BROWN: TIMER EXPIRED", "Zero point zero seconds. The noir spotlight hits. A custodian lowers his mop and shakes his head.");
+        return;
+      }
+
+      // Guards & Vision Cones
+      let spotted = false;
+      activeLvl.guards.forEach(g => {
+        g.patCd = Math.max(0, g.patCd - dt);
+        if (g.type === "tsa" && g.patCd <= 0 && Math.hypot(player.x - g.x, player.y - g.y) <= 2.1) {
+          g.patCd = 10.0;
+          if (player.items.includes("fast_track_pass")) {
+            player.items = player.items.filter(i => i !== "fast_track_pass");
+            showBanner("tsa_bypass");
+          } else {
+            player.patSec = 6.0;
+            showBanner("tsa_patdown");
+          }
+        }
+        if (g.pts.length > 1 && g.speed > 0) {
+          const tgt = g.pts[g.wpIdx];
+          const dx = tgt.x - g.x, dy = tgt.y - g.y;
+          const d = Math.hypot(dx, dy);
+          if (d <= g.speed * dt) {
+            g.x = tgt.x; g.y = tgt.y;
+            g.wpIdx = (g.wpIdx + 1) % g.pts.length;
+          } else {
+            g.x += (dx / d) * g.speed * dt;
+            g.y += (dy / d) * g.speed * dt;
+            g.angle = Math.atan2(dy, dx);
+          }
+        }
+        // Cone check (45 deg = 0.3927 rad half-angle, 7m range)
+        const dx = player.x - g.x, dy = player.y - g.y;
+        const dist = Math.hypot(dx, dy);
+        g.seeing = false;
+        if (!player.inCover && dist <= 7.0) {
+          let diff = (Math.atan2(dy, dx) - g.angle) % (Math.PI * 2);
+          if (diff > Math.PI) diff -= Math.PI * 2;
+          if (diff < -Math.PI) diff += Math.PI * 2;
+          if (Math.abs(diff) <= 0.393) {
+            const blocked = colliders.some(c => segmentHitsRect(g.x, g.y, player.x, player.y, c.x, c.y, c.w, c.h));
+            if (!blocked) {
+              g.seeing = true;
+              spotted = true;
+            }
+          }
+        }
+      });
+
+      if (player.inCover) {
+        suspicion = Math.max(0, suspicion - 25 * dt);
+      } else if (spotted) {
+        const rate = dial.tier === "sprint" ? 35 : (dial.tier === "walk" ? 5 : 0);
+        suspicion = Math.min(100, suspicion + rate * dt);
+        if (dial.tier === "sprint" && suspicion > 30 && bannerClock <= 0) showBanner("spotted_waddling");
+      } else {
+        suspicion = Math.max(0, suspicion - 12 * dt);
+      }
+      if (suspicion >= 100) {
+        finishLevel(false, "BUSTED: RANDOM SECONDARY SCREENING", "Dragged into a windowless room by two men in latex gloves while the bowel clock runs out.");
+        return;
+      }
+
+      // Release-to-interact (1.5m radius, 0.6s fill when idle)
+      let nearObj = null;
+      const allInteractables = [...activeLvl.props.filter(p => !p.done), ...activeLvl.stalls];
+      allInteractables.forEach(obj => {
+        const d = Math.hypot(player.x - obj.x, player.y - obj.y);
+        if (d <= 1.55) nearObj = obj;
+        else obj.prog = 0;
+      });
+
+      const pill = document.getElementById("interact-pill");
+      if (nearObj) {
+        pill.style.display = "block";
+        pill.textContent = `PAUSE TO INTERACT: ${nearObj.label}`;
+        if (dial.tier === "idle" && player.slipSec <= 0 && player.patSec <= 0) {
+          nearObj.prog = (nearObj.prog || 0) + dt / 0.6;
+          if (nearObj.prog >= 1.0) {
+            nearObj.prog = 0;
+            triggerInteractable(nearObj);
+          }
+        }
+      } else {
+        pill.style.display = "none";
+      }
+
+      updateHudDom();
+    }
+
+    function triggerInteractable(obj) {
+      playTone(440, 0.12, "sine");
+      if (obj.bark) showBanner(obj.bark);
+      if (obj.type === "item") {
+        if (obj.item === "rubber_flipflops") player.flipflops = true;
+        else player.items.push(obj.item);
+        obj.done = true;
+      } else if (obj.type === "distract") {
+        const h = activeLvl.hazards.find(hz => hz.id === obj.target);
+        if (h) h.cleared = true;
+        obj.done = true;
+      } else if (obj.type === "pretzel") {
+        player.boostSec = 6.0;
+        timerSec = Math.max(0, timerSec - 8.0);
+        obj.done = true;
+      } else if (obj.type === "cover") {
+        player.inCover = true;
+      } else if (obj.open !== undefined) {
+        obj.inspected = true;
+        if (!obj.open) {
+          showBanner("locked_stall");
+        } else if (obj.bidetBoss) {
+          openBidetModal();
+        } else {
+          finishLevel(true);
+        }
+      }
+    }
+
+    function hitsAny(cx, cy, r, rects) {
+      return rects.some(w => cx + r > w.x && cx - r < w.x + w.w && cy + r > w.y && cy - r < w.y + w.h);
+    }
+
+    function updateHudDom() {
+      const frac = timerSec / activeLvl.baseTimer;
+      document.getElementById("hud-level-label").textContent = `${activeLvl.iata} | BOWEL PRESSURE`;
+      document.getElementById("hud-timer-val").textContent = `${timerSec.toFixed(1)}s`;
+      const tBar = document.getElementById("hud-timer-bar");
+      tBar.style.width = `${(frac * 100).toFixed(1)}%`;
+      tBar.style.background = frac < 0.3 ? "var(--crimson)" : (frac < 0.6 ? "var(--amber)" : "var(--emerald)");
+
+      document.getElementById("hud-susp-val").textContent = `${suspicion.toFixed(0)}%`;
+      const sBar = document.getElementById("hud-susp-bar");
+      sBar.style.width = `${suspicion.toFixed(0)}%`;
+      sBar.style.background = suspicion >= 80 ? "var(--crimson)" : (suspicion >= 30 ? "var(--amber)" : "var(--paper)");
+
+      const badges = [];
+      badges.push(clenchSec > 0 ? "CLENCHING (PAUSED)" : (clenchCd > 0 ? `CLENCH CD: ${clenchCd.toFixed(0)}s` : "DBL-TAP/SPACE: CLENCH"));
+      if (player.flipflops) badges.push("FLIP-FLOPS (NO SLIP)");
+      if (player.patSec > 0) badges.push(`TSA PAT-DOWN: ${player.patSec.toFixed(1)}s`);
+      if (player.stunSec > 0) badges.push(`PERFUME STUN: ${player.stunSec.toFixed(1)}s`);
+      player.items.forEach(i => badges.push(i.toUpperCase().replace(/_/g, " ")));
+      document.getElementById("hud-badges").innerHTML = badges.map(b => `<span class="badge">${b}</span>`).join("");
+    }
+
+    // --- Stickman Noir World & Center Thumb Dial Renderer ---
+    function renderWorld() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const camX = canvas.width * 0.5 - player.x * PPM;
+      const camY = canvas.height * 0.56 - player.y * PPM;
+
+      ctx.save();
+      ctx.translate(camX, camY);
+
+      // Floor grid
+      ctx.fillStyle = "#e2ddd2";
+      ctx.fillRect(0, 0, activeLvl.world.w * PPM, activeLvl.world.h * PPM);
+      ctx.strokeStyle = "#d0c9b8";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= activeLvl.world.w; x += 2) {
+        ctx.beginPath(); ctx.moveTo(x * PPM, 0); ctx.lineTo(x * PPM, activeLvl.world.h * PPM); ctx.stroke();
+      }
+      for (let y = 0; y <= activeLvl.world.h; y += 2) {
+        ctx.beginPath(); ctx.moveTo(0, y * PPM); ctx.lineTo(activeLvl.world.w * PPM, y * PPM); ctx.stroke();
+      }
+
+      // Special zones
+      activeLvl.zones.forEach(z => {
+        if (z.type === "waterfall" || z.type === "perfume") {
+          ctx.fillStyle = z.type === "waterfall" ? "rgba(49,130,206,0.22)" : "rgba(213,63,140,0.28)";
+          ctx.beginPath(); ctx.arc(z.x * PPM, z.y * PPM, z.r * PPM, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.fillStyle = z.closed ? "#c53030" : "rgba(113,128,150,0.38)";
+          ctx.fillRect(z.x * PPM, z.y * PPM, z.w * PPM, z.h * PPM);
+        }
+      });
+
+      // Walls
+      activeLvl.walls.forEach(w => {
+        ctx.fillStyle = "#1c1c1b";
+        ctx.fillRect(w.x * PPM, w.y * PPM, w.w * PPM, w.h * PPM);
+        if (w.label) {
+          ctx.fillStyle = "#f3efe6";
+          ctx.font = "bold 9px Courier New";
+          ctx.fillText(w.label, (w.x + 0.2) * PPM, (w.y + 0.9) * PPM);
+        }
+      });
+
+      // Hazards
+      activeLvl.hazards.forEach(h => {
+        if (h.cleared) return;
+        ctx.fillStyle = "rgba(66, 153, 225, 0.35)";
+        ctx.beginPath(); ctx.arc(h.x * PPM, h.y * PPM, h.r * PPM, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f6e05e";
+        ctx.beginPath();
+        ctx.moveTo(h.x * PPM, h.y * PPM - 10);
+        ctx.lineTo(h.x * PPM - 9, h.y * PPM + 8);
+        ctx.lineTo(h.x * PPM + 9, h.y * PPM + 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#141413"; ctx.lineWidth = 2; ctx.stroke();
+      });
+
+      // Props & Stalls
+      [...activeLvl.props.filter(p => !p.done), ...activeLvl.stalls].forEach(p => {
+        const isStall = p.open !== undefined;
+        ctx.fillStyle = isStall ? (p.open ? "#2f855a" : (p.inspected ? "#c53030" : "#6b46c1")) : "#d69e2e";
+        ctx.fillRect(p.x * PPM - 11, p.y * PPM - 11, 22, 22);
+        ctx.strokeStyle = "#141413"; ctx.lineWidth = 2;
+        ctx.strokeRect(p.x * PPM - 11, p.y * PPM - 11, 22, 22);
+      });
+
+      // Guards & Vision Cones
+      activeLvl.guards.forEach(g => {
+        ctx.fillStyle = g.seeing
+          ? (suspicion >= 80 ? "rgba(252,129,129,0.55)" : "rgba(246,173,85,0.5)")
+          : "rgba(255,255,255,0.32)";
+        ctx.beginPath();
+        ctx.moveTo(g.x * PPM, g.y * PPM);
+        ctx.arc(g.x * PPM, g.y * PPM, 7.0 * PPM, g.angle - 0.393, g.angle + 0.393);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = g.type === "segway" ? "#2b6cb0" : "#1a202c";
+        ctx.beginPath(); ctx.arc(g.x * PPM, g.y * PPM, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#f3efe6"; ctx.lineWidth = 2; ctx.stroke();
+      });
+
+      // Stickman Protagonist
+      const px = player.x * PPM, py = player.y * PPM;
+      const skew = Math.sin(player.walkPhase) * (dial.tier === "sprint" ? 5 : 2.5);
+      ctx.strokeStyle = player.inCover ? "rgba(20,20,19,0.4)" : "#141413";
+      ctx.lineWidth = 3.5;
+      ctx.fillStyle = "#f3efe6";
+      ctx.beginPath(); ctx.arc(px + skew * 0.4, py - 9, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(px + skew * 0.4, py - 1); ctx.lineTo(px, py + 5);
+      ctx.moveTo(px, py + 5); ctx.lineTo(px - 5 + skew, py + 13);
+      ctx.moveTo(px, py + 5); ctx.lineTo(px + 5 - skew, py + 13);
+      ctx.stroke();
+
+      ctx.restore();
+
+      // Render Center-Anchored Virtual Thumb Dial (HUD space)
+      const c = getDialCenter();
+      ctx.fillStyle = "rgba(20, 20, 19, 0.55)";
+      ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = "rgba(243, 239, 230, 0.28)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR * 0.65, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR * 0.15, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.strokeStyle = clenchSec > 0 ? "#63b3ed" : (dial.tier === "sprint" ? "#c53030" : (dial.tier === "walk" ? "#2f855a" : "#f3efe6"));
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.beginPath(); ctx.arc(c.x + dial.dx, c.y + dial.dy, 19, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#141413"; ctx.lineWidth = 2.5; ctx.stroke();
+    }
+
+    renderLevelMenu();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

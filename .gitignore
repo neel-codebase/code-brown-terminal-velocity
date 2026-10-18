@@ -1,0 +1,9 @@
+# Ignore everything by default
+*
+
+# Explicitly allow ONLY the minimal playable web deployment files
+!.gitignore
+!vercel.json
+!index.html
+!web_playable/
+!web_playable/index.html
