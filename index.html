@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Code Brown: Terminal Velocity — Instant Playable & Shareable Build</title>
+  <title>Code Brown: Terminal Velocity (v1.0) — Playable Stealth-Action Comedy</title>
   <style>
     :root {
       --ink: #141413;
@@ -13,11 +13,17 @@
       --crimson: #c53030;
       --emerald: #2f855a;
       --blue: #3182ce;
+      --violet: #6b46c1;
     }
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
     body {
       margin: 0;
-      background: #0d0d0c;
+      background: #0b0b0a;
       color: var(--paper);
       font-family: 'Courier New', Courier, monospace;
       display: flex;
@@ -25,49 +31,88 @@
       align-items: center;
       min-height: 100vh;
       overflow: hidden;
+      touch-action: none;
     }
     #phone-frame {
       position: relative;
-      width: min(100vw, 430px);
-      height: min(100vh, 860px);
+      width: min(100vw, 440px);
+      height: min(100vh, 880px);
       background: var(--tile);
       border: 4px solid var(--paper);
       border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+      box-shadow: 0 22px 65px rgba(0,0,0,0.9);
     }
-    canvas {
+    canvas#game-canvas {
       display: block;
       width: 100%;
       height: 100%;
     }
+
+    /* --- TOP HUD WITH LIVE FACECAM PORTRAIT --- */
     .hud-top {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      background: rgba(20, 20, 19, 0.92);
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      background: rgba(20, 20, 19, 0.94);
       border: 2.5px solid var(--paper);
       border-radius: 10px;
-      padding: 9px 11px;
-      pointer-events: auto;
+      padding: 8px 10px;
       z-index: 10;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+    .hud-main-grid {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+    }
+    .facecam-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #1e1e1c;
+      border: 2px solid var(--paper);
+      border-radius: 8px;
+      padding: 3px;
+      min-width: 68px;
+      cursor: pointer;
+    }
+    #facecam-canvas {
+      width: 58px;
+      height: 54px;
+      display: block;
+      background: var(--paper);
+      border-radius: 5px;
+    }
+    #facecam-label {
+      font-size: 8px;
+      font-weight: 900;
+      color: var(--amber);
+      margin-top: 2px;
+      text-align: center;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .hud-bars-col {
+      flex: 1;
+      min-width: 0;
     }
     .hud-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-weight: 900;
-      font-size: 12px;
-      margin-bottom: 4px;
+      font-size: 11.5px;
+      margin-bottom: 3px;
     }
     .bar-track {
       width: 100%;
       height: 8px;
-      background: rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.15);
       border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .bar-fill {
       height: 100%;
@@ -76,80 +121,192 @@
     .badge-strip {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
       margin-top: 4px;
     }
     .badge {
-      font-size: 9.5px;
-      font-weight: 800;
+      font-size: 9px;
+      font-weight: 900;
       padding: 2px 6px;
       border-radius: 4px;
       background: #2d3748;
       color: var(--paper);
+      border: 1px solid rgba(255,255,255,0.25);
     }
+    #objective-bar {
+      margin-top: 5px;
+      padding: 4px 7px;
+      border-radius: 5px;
+      background: rgba(214, 158, 46, 0.18);
+      border-left: 3px solid var(--amber);
+      font-size: 10px;
+      font-weight: 800;
+      color: #fefcbf;
+      line-height: 1.25;
+    }
+
+    /* --- PRE-CRAMP 3s WARNING BAR --- */
+    #cramp-warning-bar {
+      position: absolute;
+      top: 136px;
+      left: 10px;
+      right: 10px;
+      background: var(--crimson);
+      color: #fff;
+      border: 2.5px solid var(--paper);
+      border-radius: 7px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 0.5px;
+      z-index: 14;
+      display: none;
+      animation: pulseWarn 0.32s infinite alternate;
+      box-shadow: 0 4px 12px rgba(197, 48, 48, 0.75);
+    }
+    @keyframes pulseWarn {
+      from { transform: scale(0.98); background: #9b2c2c; }
+      to { transform: scale(1.02); background: #e53e3e; }
+    }
+
+    /* --- JOHNNY ROCKETFINGERS ACTION CUT-IN COMIC PANEL --- */
     #comic-banner {
       position: absolute;
-      top: 128px;
+      top: 168px;
       left: 10px;
       right: 10px;
       background: var(--paper);
       color: var(--ink);
-      border: 3px solid var(--ink);
-      border-radius: 8px;
-      padding: 8px 10px;
-      box-shadow: 4px 4px 0 rgba(0,0,0,0.65);
-      z-index: 12;
+      border: 3.5px solid var(--ink);
+      border-radius: 10px;
+      padding: 9px 11px;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.85);
+      z-index: 18;
       display: none;
+      cursor: pointer;
+      animation: comicSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes comicSlideIn {
+      from { transform: translateY(-18px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .comic-inner {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #cutin-face-canvas {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+      background: #fffdf8;
+      border: 2.5px solid var(--ink);
+      border-radius: 7px;
+    }
+    .comic-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
     }
     #comic-Speaker {
       color: var(--crimson);
       font-weight: 900;
-      font-size: 10px;
-      letter-spacing: 0.8px;
+      font-size: 10.5px;
+      letter-spacing: 0.7px;
+    }
+    #comic-expr-pill {
+      background: var(--ink);
+      color: var(--amber);
+      font-size: 8.5px;
+      font-weight: 900;
+      padding: 1.5px 5px;
+      border-radius: 4px;
     }
     #comic-text {
-      font-weight: 700;
+      font-weight: 800;
       font-style: italic;
       font-size: 12px;
       margin-top: 3px;
+      line-height: 1.28;
     }
+    #comic-effect-tag {
+      margin-top: 5px;
+      display: inline-block;
+      background: #1a202c;
+      color: #fefcbf;
+      border-left: 3.5px solid var(--crimson);
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+    }
+
+    /* --- CONTEXTUAL INTERACTION PILL & DEDICATED CLENCH BUTTON --- */
     #interact-pill {
       position: absolute;
-      bottom: 245px;
+      bottom: 248px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(20,20,19,0.92);
-      border: 1.5px solid var(--paper);
-      color: var(--paper);
-      padding: 5px 11px;
-      border-radius: 6px;
+      background: rgba(20,20,19,0.95);
+      border: 2px solid var(--amber);
+      color: #fefcbf;
+      padding: 6px 12px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
-      z-index: 11;
+      z-index: 12;
       display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
     }
+    #clench-btn {
+      position: absolute;
+      bottom: 158px;
+      right: 16px;
+      width: 78px;
+      height: 58px;
+      border-radius: 12px;
+      border: 3px solid var(--paper);
+      background: var(--blue);
+      color: var(--paper);
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 10px;
+      line-height: 1.15;
+      cursor: pointer;
+      z-index: 12;
+      display: none;
+      box-shadow: 0 5px 0 var(--ink);
+      text-align: center;
+      padding: 4px;
+    }
+    #clench-btn:active { transform: translateY(2px); }
+
+    /* --- MODALS --- */
     .modal-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(12, 12, 12, 0.90);
+      background: rgba(10, 10, 10, 0.92);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 18px;
+      padding: 14px;
       z-index: 30;
     }
     .card {
       width: 100%;
-      max-height: 92%;
+      max-height: 95%;
       overflow-y: auto;
       background: var(--paper);
       color: var(--ink);
       border: 4px solid var(--ink);
       border-radius: 12px;
-      padding: 16px;
-      box-shadow: 6px 6px 0 rgba(0,0,0,0.7);
+      padding: 14px;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.75);
     }
     .level-btn {
       width: 100%;
@@ -157,8 +314,8 @@
       background: #fffdf8;
       border: 2.5px solid var(--ink);
       border-radius: 8px;
-      padding: 10px;
-      margin-top: 8px;
+      padding: 9px 10px;
+      margin-top: 7px;
       cursor: pointer;
       font-family: inherit;
       transition: transform 0.1s;
@@ -169,11 +326,51 @@
       color: var(--paper);
       border: 2px solid var(--ink);
       border-radius: 6px;
-      padding: 9px 14px;
+      padding: 8px 12px;
       font-family: inherit;
       font-weight: 900;
       cursor: pointer;
-      margin: 4px;
+      margin: 3px;
+    }
+    .diff-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin: 7px 0;
+    }
+    .diff-btn {
+      padding: 6px 4px;
+      font-family: inherit;
+      font-size: 9.5px;
+      font-weight: 900;
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      background: #e2ddd2;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: center;
+    }
+    .diff-btn.active {
+      background: var(--ink);
+      color: var(--amber);
+    }
+    .expr-preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e9e4d8;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+    }
+    #menu-expr-canvas {
+      width: 48px;
+      height: 48px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      flex-shrink: 0;
     }
     .bidet-grid {
       display: grid;
@@ -198,46 +395,89 @@
   <div id="phone-frame">
     <canvas id="game-canvas"></canvas>
 
+    <!-- TOP HUD PANEL WITH LIVE JOHNNY ROCKETFINGERS FACECAM -->
     <div class="hud-top" id="hud-panel" style="display:none;">
-      <div class="hud-row">
-        <span id="hud-level-label">GOI | BOWEL PRESSURE</span>
-        <span id="hud-timer-val">90.0s</span>
-        <button class="btn-primary" style="padding:2px 7px;font-size:10px;margin:0;" onclick="openMenu()">MAP</button>
+      <div class="hud-main-grid">
+        <div class="facecam-box" onclick="cycleTestExpression()" title="Tap to test facial expressions">
+          <canvas id="facecam-canvas" width="64" height="60"></canvas>
+          <div id="facecam-label">NOIR GLARE</div>
+        </div>
+        <div class="hud-bars-col">
+          <div class="hud-row">
+            <span id="hud-level-label">GOI | BOWEL PRESSURE</span>
+            <span id="hud-timer-val" style="font-size:14px;">65.0s</span>
+            <button class="btn-primary" style="padding:2px 6px;font-size:9.5px;margin:0;" onclick="openMenu()">MAP</button>
+          </div>
+          <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
+          <div class="hud-row">
+            <span>SECURITY SUSPICION</span>
+            <span id="hud-susp-val">0%</span>
+          </div>
+          <div class="bar-track"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
+        </div>
       </div>
-      <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
-      <div class="hud-row">
-        <span>SECURITY SUSPICION</span>
-        <span id="hud-susp-val">0%</span>
-      </div>
-      <div class="bar-track"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
       <div class="badge-strip" id="hud-badges"></div>
+      <div id="objective-bar">OBJECTIVE: Pass Security & Unseal the Restroom Wing (Bribe Janitor or Distract)!</div>
     </div>
 
-    <div id="comic-banner">
-      <div id="comic-Speaker">INNER MONOLOGUE</div>
-      <div id="comic-text"></div>
+    <!-- PRE-CRAMP 3s WARNING BAR -->
+    <div id="cramp-warning-bar">⚠ GUT RUMBLE IN 2.5s — SLOW DOWN OR HIT CLENCH!</div>
+
+    <!-- JOHNNY ROCKETFINGERS COMIC STRIP ACTION CUT-IN BANNER -->
+    <div id="comic-banner" onclick="dismissBanner()">
+      <div class="comic-inner">
+        <canvas id="cutin-face-canvas" width="68" height="68"></canvas>
+        <div style="flex:1;min-width:0;">
+          <div class="comic-header-row">
+            <span id="comic-Speaker">INNER MONOLOGUE</span>
+            <span id="comic-expr-pill">EXPR: NOIR GLARE</span>
+          </div>
+          <div id="comic-text"></div>
+          <div id="comic-effect-tag">⚡ EFFECT: ACTIVE</div>
+        </div>
+      </div>
     </div>
 
     <div id="interact-pill">RELEASE THUMB: INTERACT</div>
+    <button id="clench-btn" onclick="triggerClench()">🍑 IRON<br/>CLENCH<br/><span id="clench-btn-sub" style="font-size:8.5px;color:#fefcbf;">READY</span></button>
 
-    <!-- Boarding Pass Level Select Modal -->
+    <!-- BOARDING PASS LEVEL SELECT MODAL (v1.0) -->
     <div class="modal-overlay" id="menu-modal">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:1px;">BOARDING PASS SELECTOR</span>
-          <label style="font-size:10px;font-weight:800;cursor:pointer;">
+          <span style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:0.8px;">BOARDING PASS • v1.0 DIRECTOR'S CUT</span>
+          <label style="font-size:9.5px;font-weight:800;cursor:pointer;">
             <input type="checkbox" id="safe-title-toggle" onchange="toggleSafeTitle()" /> Store-Safe Title
           </label>
         </div>
-        <h2 id="game-title-heading" style="margin:4px 0 4px 0;font-size:18px;">I Need to Take a Sh!t: Airport Dash</h2>
-        <div style="font-size:11px;font-weight:700;margin-bottom:8px;">
-          360° Center Thumb Dial (Drag) • Double-Tap Dial or [SPACE] to Clench • Pause in Zone (0.6s) to Interact
+        <h2 id="game-title-heading" style="margin:3px 0 3px 0;font-size:17px;">I Need to Take a Sh!t: Airport Dash</h2>
+        <div style="font-size:10.5px;font-weight:700;margin-bottom:6px;line-height:1.3;">
+          <b>v1 Upgrades:</b> Live Expression FaceCam • Action Slow-Mo Cut-Ins • Floating World Callouts • Sealed Restroom Wings & Mystery Stalls!
         </div>
+
+        <!-- Interactive Expression Preview Strip -->
+        <div class="expr-preview-bar">
+          <canvas id="menu-expr-canvas" width="56" height="56"></canvas>
+          <div style="flex:1;">
+            <div style="font-size:10px;font-weight:900;color:var(--crimson);" id="menu-expr-title">EXPRESSION LAB: NOIR GLARE</div>
+            <div style="font-size:9.5px;font-weight:700;" id="menu-expr-desc">Cynical half-lidded eyes & toothpick smirk (>65% clock)</div>
+          </div>
+          <button class="btn-primary" style="padding:5px 8px;font-size:9.5px;margin:0;" onclick="cycleMenuExpression()">NEXT FACE 🎭</button>
+        </div>
+
+        <!-- Difficulty Selector -->
+        <div style="font-size:9.5px;font-weight:900;letter-spacing:0.5px;">SELECT CHALLENGE TIER:</div>
+        <div class="diff-strip">
+          <button class="diff-btn" id="diff-casual" onclick="setDifficulty('casual')">CASUAL TOURIST<br/><span style="font-weight:600;font-size:8.5px;">+30% Clock</span></button>
+          <button class="diff-btn active" id="diff-standard" onclick="setDifficulty('standard')">CODE BROWN (v1)<br/><span style="font-weight:600;font-size:8.5px;">Tight Par & Chase</span></button>
+          <button class="diff-btn" id="diff-nightmare" onclick="setDifficulty('nightmare')">VINDALOO HELL<br/><span style="font-weight:600;font-size:8.5px;">-20% Clock / Fast</span></button>
+        </div>
+
         <div id="level-list"></div>
       </div>
     </div>
 
-    <!-- Level 5 Haneda 12-Button Electronic Bidet Boss Modal -->
+    <!-- LEVEL 5 HANEDA 12-BUTTON ELECTRONIC BIDET BOSS MODAL -->
     <div class="modal-overlay" id="bidet-modal" style="display:none;">
       <div class="card">
         <div style="color:var(--crimson);font-weight:900;font-size:15px;text-align:center;">FINAL BOSS: HANEDA WASHLET-9000</div>
@@ -248,13 +488,14 @@
       </div>
     </div>
 
-    <!-- End of Run Slapstick Modal -->
+    <!-- END OF RUN SLAPSTICK MODAL WITH EXPRESSION PORTRAIT -->
     <div class="modal-overlay" id="outcome-modal" style="display:none;">
       <div class="card" style="text-align:center;">
+        <canvas id="outcome-face-canvas" width="76" height="76" style="background:#fffdf8;border:3px solid var(--ink);border-radius:10px;margin:0 auto 6px auto;display:block;"></canvas>
         <h2 id="outcome-title" style="margin:4px 0;">THRONE SECURED!</h2>
-        <div id="outcome-sub" style="font-weight:800;font-size:12px;margin-bottom:10px;"></div>
-        <p id="outcome-bark" style="font-style:italic;font-weight:700;font-size:13px;"></p>
-        <div id="outcome-stats" style="font-weight:900;font-size:13px;margin:10px 0;"></div>
+        <div id="outcome-sub" style="font-weight:800;font-size:12px;margin-bottom:8px;"></div>
+        <p id="outcome-bark" style="font-style:italic;font-weight:700;font-size:13px;margin:8px 0;"></p>
+        <div id="outcome-stats" style="font-weight:900;font-size:12.5px;margin:8px 0;"></div>
         <div>
           <button class="btn-primary" onclick="retryCurrentLevel()">RETRY TERMINAL</button>
           <button class="btn-primary" onclick="nextOrMenu()">NEXT / TERMINAL MAP</button>
@@ -264,177 +505,506 @@
   </div>
 
   <script>
-    // --- Canonical 5-Level Data & Dialogues (Mirrors assets/data/*.json & assets/maps/*.json) ---
+    // =========================================================================
+    // 1. JOHNNY ROCKETFINGERS 10-EXPRESSION CATALOG & DIALOGUE SCRIPT TABLE
+    // =========================================================================
+    const EXPRESSION_META = [
+      { id: "noir_glare", label: "NOIR GLARE", desc: "Cynical half-lidded eyes & toothpick smirk (>65% clock)" },
+      { id: "sweating_squint", label: "SWEAT SQUINT", desc: "Asymmetric squint & rolling forehead sweat beads (35%–65%)" },
+      { id: "clenched_grimace", label: "CLENCH GRIMACE", desc: "Throbbing crimson forehead vein & zig-zag gritted teeth (<35%)" },
+      { id: "panic_stare", label: "PANIC STARE", desc: "Wide bloodshot eyes, pinprick pupils & sweat geyser (<18%)" },
+      { id: "twitching_eyebrow", label: "TWITCH BROW", desc: "Deadpan disbelief & sky-high twitching eyebrow (Locked Stall)" },
+      { id: "awkward_smile", label: "GUILTY GRIN", desc: "Shifty side-glancing eyes & nervous wide grin (Spotted by TSA)" },
+      { id: "smirk_sweat", label: "SLY SMIRK", desc: "Tactical wink & raised brow (Bribed Janitor / Fast-Track Pass)" },
+      { id: "iron_clench", label: "IRON CLENCH", desc: "Flushed violet puffed cheeks & squeezed eyes (Timer Paused!)" },
+      { id: "bergamot_stun", label: "SPIRAL STUN", desc: "Spinning spiral eyes & dizzy stars (Wet Slip / Perfume Stun)" },
+      { id: "freeze_frame_despair", label: "NOIR DESPAIR", desc: "Stark noir spotlight & hollow-eyed freeze-frame (Code Brown)" }
+    ];
+
     const DIALOGUES = {
-      spawn_goi: ["INNER MONOLOGUE", "That second prawn vindaloo by the beach was a tactical error. T-minus ninety seconds before I make international news."],
-      spawn_jfk: ["INNER MONOLOGUE", "Terminal 4 is half a mile long and every TSA agent is staring at my sweat-soaked forehead."],
-      spawn_lhr: ["INNER MONOLOGUE", "A lukewarm Heathrow steak-and-kidney pie has declared war on my lower intestine. Mind the gap—and my dignity."],
-      spawn_sin: ["INNER MONOLOGUE", "Who puts a forty-meter roaring indoor waterfall inside a transit hub? Even the ficus trees know I'm clenching."],
-      spawn_dxb: ["INNER MONOLOGUE", "Duty-free gauntlet, an Automated People Mover, and a Japanese robo-toilet standing between me and dishonor."],
-      hit_wet_floor: ["SLIP HAZARD", "Mopped floor! Wet tiles! One slip and I become a human curling stone of regret!"],
-      saved_flipflops: ["TACTICAL GEAR", "Duty-free rubber flip-flops equipped. Ugly as sin, grip like snow tires."],
-      spotted_waddling: ["SECURITY ALERT", "Act natural. Nothing says 'innocent traveler' like sweating through a linen shirt and walking like a crab."],
-      locked_stall: ["OUT OF ORDER", "Locked. 'Maintenance Required.' Brother, you haven't seen maintenance required yet."],
-      bribe_mints: ["CUSTODIAN BRIBED", "Slipped the custodian a tin of imported spearmint. The yellow tape parts like the Red Sea."],
-      distract_triggered: ["SABOTAGE", "Distraction deployed! Custodian abandoned the mop barricade to investigate!"],
-      spicy_pretzel: ["BAD DECISION", "Free sample jalapeño pretzel?! Adrenaline speed +25%, colon clock -8 seconds!"],
-      tsa_patdown: ["TSA BOTTLENECK", "'Sir, step onto the mat.' 6-second pat-down while the bowel clock ticks!"],
-      tsa_bypass: ["FAST-TRACK", "Flashed the forged Fast-Track sticker. Bypassed pat-down with zero delay!"],
-      waterfall_warn: ["PSYCHOLOGICAL HAZARD", "SHHHHHH—roaring Changi waterfall! Cramp Wave frequency accelerated by 1.5x!"],
-      perfume_stun: ["SENSORY AMBUSH", "Spritzed in the eyes by an aggressive Eau de Cologne promoter! Stunned for 2 seconds!"]
+      spawn_goi: {
+        speaker: "INNER MONOLOGUE", expr: "sweating_squint",
+        effect: "🎯 GOAL: BRIBE OR LURE JANITOR TO UNSEAL RESTROOM WING!",
+        callout: "GOI: 65s ON THE CLOCK!",
+        text: "That second prawn vindaloo by the beach was a tactical error. The restroom wing is taped off by a janitor—I need mints or a distraction!"
+      },
+      spawn_jfk: {
+        speaker: "INNER MONOLOGUE", expr: "clenched_grimace",
+        effect: "🎯 GOAL: BYPASS TSA SCANNER & CLEAR MOP CART BARRICADE!",
+        callout: "JFK TERMINAL 4!",
+        text: "Terminal 4 is half a mile long, TSA is frisking everyone without a CLEAR pass, and my colon just declared DEFCON 1."
+      },
+      spawn_lhr: {
+        speaker: "INNER MONOLOGUE", expr: "twitching_eyebrow",
+        effect: "🎯 GOAL: TIME THE SHUTTLE DOORS & LURE THE LOO CUSTODIAN!",
+        callout: "MIND THE GAP!",
+        text: "A lukewarm Heathrow steak-and-kidney pie has declared war on my lower intestine. Mind the gap—and my dignity."
+      },
+      spawn_sin: {
+        speaker: "INNER MONOLOGUE", expr: "panic_stare",
+        effect: "🎯 GOAL: SURVIVE 1.5x WATERFALL CRAMPS & UNSEAL SANCTUARY!",
+        callout: "RAIN VORTEX AHEAD!",
+        text: "Who puts a forty-meter roaring indoor waterfall inside a transit hub?! Even the ficus trees know I'm clenching."
+      },
+      spawn_dxb: {
+        speaker: "INNER MONOLOGUE", expr: "noir_glare",
+        effect: "🎯 GOAL: DODGE PERFUME AMBUSHES -> APM TRAIN -> 12-KEY BOSS!",
+        callout: "FINAL BOSS GAUNTLET!",
+        text: "Duty-free perfume spritzers, an Automated People Mover train, and a 12-button Japanese robo-toilet standing between me and dishonor."
+      },
+      hit_wet_floor: {
+        speaker: "SLIP HAZARD TRIGGERED!", expr: "bergamot_stun",
+        effect: "🫧 EFFECT: 2.0s UNCONTROLLED SLIDE! (GRAB FLIP-FLOPS NEXT TIME)",
+        callout: "🫧 SLIP & SLIDE! (2.0s)",
+        text: "Mopped floor! Wet tiles! Without rubber flip-flops I'm a human curling stone of regret!"
+      },
+      saved_flipflops: {
+        speaker: "TACTICAL GEAR EQUIPPED", expr: "smirk_sweat",
+        effect: "🩴 EFFECT: RUBBER SOLES EQUIPPED — 100% IMMUNE TO WET FLOORS!",
+        callout: "🩴 FLIP-FLOPS ON! NO SLIP!",
+        text: "Duty-free rubber flip-flops equipped. Ugly as sin, grip wet terminal marble like snow tires."
+      },
+      spotted_waddling: {
+        speaker: "SECURITY VISION CONE!", expr: "awkward_smile",
+        effect: "🚨 EFFECT: SUSPICION +38%/s & GUARD CHASING! BREAK LOS OR HIDE!",
+        callout: "🚨 SPOTTED WADDLING!",
+        text: "Act natural! Nothing says 'innocent traveler' like sweating through a linen shirt and crab-walking at 5.5 m/s."
+      },
+      locked_stall: {
+        speaker: "MYSTERY STALL INSPECTED", expr: "twitching_eyebrow",
+        effect: "🔒 EFFECT: DECOY STALL LOCKED (-1.5s PANIC)! TRY ANOTHER STALL!",
+        callout: "🔒 LOCKED! WRONG STALL!",
+        text: "Locked! 'Occupied / Maintenance Required.' Brother, if I don't find the open door in ten seconds, you'll see real maintenance required."
+      },
+      bribe_pickup: {
+        speaker: "TACTICAL ITEM ACQUIRED", expr: "smirk_sweat",
+        effect: "🍬 EFFECT: POCKETED BREATH MINTS — WALK UP TO MOP CART TO BRIBE!",
+        callout: "🍬 GOT BREATH MINTS!",
+        text: "Pocketed a tin of curiously strong mints. Now I can bribe the custodian taping off the restroom wing!"
+      },
+      bribe_mints: {
+        speaker: "CUSTODIAN BRIBED!", expr: "smirk_sweat",
+        effect: "✅ EFFECT: MOP BARRICADE REMOVED! RESTROOM WING IS NOW OPEN!",
+        callout: "✅ BRIBED! WING OPEN!",
+        text: "Slipped the custodian the imported spearmint tin. The yellow 'Cleaning in Progress' tape parts like the Red Sea!"
+      },
+      distract_triggered: {
+        speaker: "POINT-&-CLICK SABOTAGE!", expr: "noir_glare",
+        effect: "✅ EFFECT: CUSTODIAN LURED AWAY! RESTROOM WING IS NOW OPEN!",
+        callout: "🗑️ SABOTAGE! DOOR CLEAR!",
+        text: "Chaos deployed! The custodian abandoned the restroom doorway with his mop bucket to clean up the mess!"
+      },
+      spicy_pretzel: {
+        speaker: "GASTRONOMIC GAMBLE!", expr: "panic_stare",
+        effect: "🌶️ EFFECT: +28% SPEED FOR 6.0s | -8.0s COLON COUNTDOWN!",
+        callout: "🌶️ +28% SPD / -8.0s CLOCK!",
+        text: "Free sample jalapeño pretzel?! Why did I chew that?! Adrenaline speed +28%, colon clock -8 seconds!"
+      },
+      tsa_patdown: {
+        speaker: "CHECKPOINT FRISK!", expr: "clenched_grimace",
+        effect: "🧤 EFFECT: FROZEN 5.0s FOR PAT-DOWN & -4.0s GUT SQUEEZE!",
+        callout: "🧤 FRISKED! 5s HOLD & -4s!",
+        text: "'Sir, step onto the mat and unbuckle your belt.' A 5-second pat-down AND he pressed right on my lower abdomen (-4s)!"
+      },
+      tsa_bypass: {
+        speaker: "DIPLOMATIC FAST-TRACK", expr: "smirk_sweat",
+        effect: "🎫 EFFECT: FAST-TRACK PASS ACQUIRED — BREEZE PAST TSA!",
+        callout: "🎫 FAST-TRACK READY!",
+        text: "Grabbed the forged Diplomatic Fast-Track pass. TSA won't lay a single latex glove on me now."
+      },
+      tsa_bypass_used: {
+        speaker: "CHECKPOINT BYPASSED!", expr: "smirk_sweat",
+        effect: "⚡ EFFECT: SKIPPED 5.0s PAT-DOWN WITH FAST-TRACK PASS!",
+        callout: "⚡ TSA BYPASSED! 0s DELAY!",
+        text: "Flashed the Fast-Track sticker at the scanner. The velvet rope dropped without a pat-down!"
+      },
+      waterfall_warn: {
+        speaker: "PSYCHOLOGICAL HAZARD!", expr: "sweating_squint",
+        effect: "🌊 EFFECT: ROARING WATERFALL ACCELERATES CRAMP WAVES BY 1.5x!",
+        callout: "🌊 1.5x CRAMP FREQUENCY!",
+        text: "SHHHHHH—fifty thousand gallons of cascading water per minute! Psychological torture is accelerating Cramp Waves by 1.5x!"
+      },
+      perfume_stun: {
+        speaker: "DUTY-FREE AMBUSH!", expr: "bergamot_stun",
+        effect: "🌸 EFFECT: BLINDED BY PINK BERGAMOT MIST & STUNNED FOR 2.0s!",
+        callout: "🌸 PERFUME STUN! (2.0s)",
+        text: "Ambush! Aggressive Eau de Cologne promoter spritzed my eyes! Blinded by bergamot for two seconds!"
+      },
+      crowd_jostle: {
+        speaker: "PASSENGER COLLISION!", expr: "clenched_grimace",
+        effect: "🧳 EFFECT: BUMPED BY MOVING CROWD (-2.0s GUT JOLT)!",
+        callout: "🧳 CROWD BUMP! -2.0s!",
+        text: "Watch where you're swinging that surfboard bag, mate! Direct impact to the lower intestine (-2.0s)!"
+      },
+      clipboard_clue: {
+        speaker: "MAINTENANCE LOG INTEL!", expr: "smirk_sweat",
+        effect: "📋 EFFECT: TRUE OPEN THRONE STALL HIGHLIGHTED IN GREEN!",
+        callout: "📋 INTEL: OPEN STALL MAPPED!",
+        text: "Checked the janitor's clipboard! I now know exactly which stall in the Restroom Wing is unlocked!"
+      },
+      cramp_hit_penalty: {
+        speaker: "CRAMP WAVE STRIKE!", expr: "panic_stare",
+        effect: "💥 EFFECT: CAUGHT SPRINTING DURING CRAMP (-4.5s & STAGGER)!",
+        callout: "💥 CRAMP PENALTY! -4.5s!",
+        text: "Augh! Caught sprinting when the Cramp Wave hit! Lost 4.5 seconds—double-tap to Clench or walk when the warning flashes!"
+      }
     };
 
+    // =========================================================================
+    // 2. PROCEDURAL JOHNNY ROCKETFINGERS FACIAL EXPRESSION RENDERER
+    // =========================================================================
+    function drawJohnnyExpression(targetCtx, w, h, exprId, t) {
+      targetCtx.clearRect(0, 0, w, h);
+      const cx = w * 0.5, cy = h * 0.54;
+      const r = Math.min(w, h) * 0.36;
+
+      // Background comic halftone/stripes
+      targetCtx.fillStyle = exprId === "panic_stare" || exprId === "clenched_grimace"
+        ? "#fed7d7"
+        : (exprId === "iron_clench" ? "#e9d8fd" : (exprId === "smirk_sweat" ? "#c6f6d5" : "#f7f2e4"));
+      targetCtx.fillRect(0, 0, w, h);
+
+      // Action speed lines on intense expressions
+      if (["panic_stare", "clenched_grimace", "bergamot_stun", "iron_clench"].includes(exprId)) {
+        targetCtx.strokeStyle = "rgba(197,48,48,0.22)";
+        targetCtx.lineWidth = 1.5;
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2 + t * 2;
+          targetCtx.beginPath();
+          targetCtx.moveTo(cx + Math.cos(a) * r * 0.9, cy + Math.sin(a) * r * 0.9);
+          targetCtx.lineTo(cx + Math.cos(a) * r * 1.45, cy + Math.sin(a) * r * 1.45);
+          targetCtx.stroke();
+        }
+      }
+
+      // Head shake offset
+      const jitterX = (exprId === "panic_stare" || exprId === "clenched_grimace") ? Math.sin(t * 38) * 1.4 : 0;
+      const hx = cx + jitterX, hy = cy;
+
+      // Head circle
+      targetCtx.fillStyle = exprId === "iron_clench" ? "#d6bcfa" : (exprId === "freeze_frame_despair" ? "#cbd5e0" : "#fffdf9");
+      targetCtx.strokeStyle = "#141413";
+      targetCtx.lineWidth = 2.6;
+      targetCtx.beginPath();
+      targetCtx.arc(hx, hy, r, 0, Math.PI * 2);
+      targetCtx.fill();
+      targetCtx.stroke();
+
+      const eyeY = hy - r * 0.16;
+      const eyeSep = r * 0.42;
+
+      // Forehead throbbing vein on clenched_grimace / iron_clench
+      if (exprId === "clenched_grimace" || exprId === "iron_clench") {
+        targetCtx.strokeStyle = "#c53030";
+        targetCtx.lineWidth = 2.0;
+        targetCtx.beginPath();
+        targetCtx.moveTo(hx - r * 0.55, hy - r * 0.55);
+        targetCtx.lineTo(hx - r * 0.35, hy - r * 0.42);
+        targetCtx.lineTo(hx - r * 0.48, hy - r * 0.28);
+        targetCtx.stroke();
+      }
+
+      // Eyes & Brows
+      targetCtx.strokeStyle = "#141413";
+      targetCtx.fillStyle = "#141413";
+      if (exprId === "bergamot_stun") {
+        [-1, 1].forEach(dir => {
+          const ex = hx + dir * eyeSep;
+          targetCtx.beginPath();
+          for (let s = 0; s <= 20; s++) {
+            const p = s / 20;
+            const ang = p * Math.PI * 3.5 + t * 8 * dir;
+            const rad = p * r * 0.25;
+            const px = ex + Math.cos(ang) * rad, py = eyeY + Math.sin(ang) * rad;
+            if (s === 0) targetCtx.moveTo(px, py); else targetCtx.lineTo(px, py);
+          }
+          targetCtx.stroke();
+        });
+      } else if (exprId === "panic_stare" || exprId === "freeze_frame_despair") {
+        [-1, 1].forEach(dir => {
+          const ex = hx + dir * eyeSep;
+          targetCtx.fillStyle = "#ffffff";
+          targetCtx.beginPath(); targetCtx.arc(ex, eyeY, r * 0.25, 0, Math.PI * 2); targetCtx.fill(); targetCtx.stroke();
+          targetCtx.fillStyle = exprId === "panic_stare" ? "#c53030" : "#141413";
+          targetCtx.beginPath(); targetCtx.arc(ex + Math.sin(t * 20), eyeY, 2.1, 0, Math.PI * 2); targetCtx.fill();
+        });
+      } else if (exprId === "iron_clench") {
+        [-1, 1].forEach(dir => {
+          const ex = hx + dir * eyeSep;
+          targetCtx.lineWidth = 2.4;
+          targetCtx.beginPath();
+          targetCtx.moveTo(ex - dir * 5, eyeY - 3);
+          targetCtx.lineTo(ex + dir * 3, eyeY);
+          targetCtx.lineTo(ex - dir * 5, eyeY + 3);
+          targetCtx.stroke();
+        });
+      } else {
+        // Standard / squint / awkward / twitching eyes
+        const shiftX = exprId === "awkward_smile" ? Math.sin(t * 4) * 3.2 : 0;
+        [-1, 1].forEach(dir => {
+          const ex = hx + dir * eyeSep;
+          if (exprId === "sweating_squint" && dir === -1) {
+            targetCtx.lineWidth = 2.2;
+            targetCtx.beginPath();
+            targetCtx.moveTo(ex - 4, eyeY); targetCtx.lineTo(ex + 4, eyeY);
+            targetCtx.stroke();
+          } else {
+            targetCtx.fillStyle = "#141413";
+            targetCtx.beginPath(); targetCtx.arc(ex + shiftX, eyeY, 2.7, 0, Math.PI * 2); targetCtx.fill();
+          }
+        });
+        // Eyebrows
+        targetCtx.lineWidth = 2.4;
+        const twitch = exprId === "twitching_eyebrow" ? -5.5 - Math.abs(Math.sin(t * 16)) * 3.5 : -2.5;
+        targetCtx.beginPath();
+        targetCtx.moveTo(hx - eyeSep - 5, eyeY - 4 + twitch);
+        targetCtx.lineTo(hx - eyeSep + 5, eyeY - 5);
+        targetCtx.moveTo(hx + eyeSep - 5, eyeY - 5);
+        targetCtx.lineTo(hx + eyeSep + 5, eyeY - 6);
+        targetCtx.stroke();
+      }
+
+      // Mouth
+      const my = hy + r * 0.38;
+      targetCtx.lineWidth = 2.2;
+      if (exprId === "clenched_grimace" || exprId === "awkward_smile") {
+        const mw = r * 1.0, mh = r * 0.34;
+        targetCtx.fillStyle = "#ffffff";
+        targetCtx.fillRect(hx - mw * 0.5, my - mh * 0.5, mw, mh);
+        targetCtx.strokeRect(hx - mw * 0.5, my - mh * 0.5, mw, mh);
+        // Teeth grid
+        targetCtx.beginPath();
+        for (let k = -1; k <= 1; k++) {
+          targetCtx.moveTo(hx + k * (mw * 0.25), my - mh * 0.5);
+          targetCtx.lineTo(hx + k * (mw * 0.25), my + mh * 0.5);
+        }
+        targetCtx.stroke();
+      } else if (exprId === "panic_stare" || exprId === "freeze_frame_despair") {
+        targetCtx.fillStyle = "#141413";
+        targetCtx.beginPath();
+        targetCtx.ellipse(hx, my, r * 0.32, r * 0.24, 0, 0, Math.PI * 2);
+        targetCtx.fill();
+      } else if (exprId === "smirk_sweat" || exprId === "noir_glare") {
+        targetCtx.beginPath();
+        targetCtx.moveTo(hx - r * 0.38, my + 1);
+        targetCtx.quadraticCurveTo(hx, my + 3, hx + r * 0.44, my - 4);
+        targetCtx.stroke();
+        if (exprId === "noir_glare") {
+          // Cynical toothpick
+          targetCtx.lineWidth = 1.6;
+          targetCtx.beginPath();
+          targetCtx.moveTo(hx + r * 0.35, my - 2);
+          targetCtx.lineTo(hx + r * 0.68, my - 7);
+          targetCtx.stroke();
+        }
+      } else {
+        targetCtx.beginPath();
+        targetCtx.moveTo(hx - r * 0.35, my);
+        targetCtx.lineTo(hx + r * 0.35, my);
+        targetCtx.stroke();
+      }
+
+      // Animated comic sweat droplets
+      if (exprId !== "noir_glare") {
+        const dropY = (t * 22) % 10;
+        targetCtx.fillStyle = "#63b3ed";
+        targetCtx.beginPath();
+        targetCtx.arc(hx + r * 0.76, hy - r * 0.38 + dropY, 3.3, 0, Math.PI * 2);
+        targetCtx.fill();
+        if (["panic_stare", "awkward_smile", "clenched_grimace"].includes(exprId)) {
+          targetCtx.beginPath();
+          targetCtx.arc(hx - r * 0.78, hy - r * 0.2 + ((t * 28) % 9), 2.8, 0, Math.PI * 2);
+          targetCtx.fill();
+        }
+      }
+    }
+
+    // =========================================================================
+    // 3. 5 CAMPAIGN LEVELS WITH SEALED RESTROOM WINGS, MYSTERY STALLS & CROWDS
+    // =========================================================================
     const LEVELS = [
       {
         id: 1, iata: "GOI", name: "Goa Dabolim International Airport",
-        sub: "Integrated Terminal Enclave • Surfboard Bags & Mop Barricade",
-        baseTimer: 90, crampInterval: 25, spawnBark: "spawn_goi",
-        winBark: "Sweet ceramic salvation. Never trust a beach shack buffet before boarding.",
+        sub: "Sealed Restroom Wing • Surfboard Tourists & CISF Frisk Checkpoint",
+        baseTimer: 65, crampInterval: 18, spawnBark: "spawn_goi",
+        winBark: "Sweet ceramic salvation. Never trust a beach shack prawn vindaloo forty minutes before boarding.",
         world: { w: 20, h: 38 }, spawn: { x: 10, y: 35 },
         walls: [
           { x: 0, y: 0, w: 1, h: 38 }, { x: 19, y: 0, w: 1, h: 38 },
           { x: 0, y: 0, w: 20, h: 1 }, { x: 0, y: 37, w: 20, h: 1 },
-          { x: 3.5, y: 29, w: 5.5, h: 1.6, label: "Surfboard Bags" },
-          { x: 11.5, y: 25.5, w: 5.0, h: 2.2, label: "Vindaloo Air Desk" },
-          { x: 1, y: 17.5, w: 6.5, h: 1.2, label: "CISF Barrier" },
-          { x: 12.5, y: 17.5, w: 6.5, h: 1.2, label: "CISF Barrier" },
-          { x: 5.5, y: 10.5, w: 4.2, h: 2.0, label: "Cashew Kiosk" },
-          { x: 13.0, y: 7.0, w: 6.0, h: 1.0, label: "Restroom Alcove" }
+          { x: 3.2, y: 29.0, w: 5.8, h: 1.6, label: "Surfboard Baggage Pile" },
+          { x: 11.2, y: 26.0, w: 5.2, h: 2.0, label: "Vindaloo Air Desk" },
+          // Full-width CISF Security Barrier with narrow central frisk gap (x: 8.6..11.4)
+          { x: 1.0, y: 19.0, w: 7.6, h: 1.3, label: "CISF Security Wall" },
+          { x: 11.4, y: 19.0, w: 7.6, h: 1.3, label: "CISF Security Wall" },
+          { x: 4.5, y: 12.8, w: 4.5, h: 1.8, label: "Cashew & Feni Kiosk" },
+          // Sealed Restroom Wing Wall (only doorway is x: 12.6..15.7, blocked by Custodian h1!)
+          { x: 1.0, y: 8.0, w: 11.6, h: 1.2, label: "Restroom Wing Wall (Sealed)" },
+          { x: 15.7, y: 8.0, w: 3.3, h: 1.2, label: "Restroom Wing Wall" }
         ],
         guards: [
-          { id: "g1", type: "patrol", speed: 2.2, pts: [{x:4,y:23},{x:15,y:23}] },
-          { id: "g2", type: "tsa", speed: 0, angle: 1.57, pts: [{x:9.8,y:17.5}] },
-          { id: "g3", type: "patrol", speed: 2.5, pts: [{x:3.5,y:7.5},{x:11.5,y:7.5},{x:11.5,y:13.5},{x:3.5,y:13.5}] }
+          { id: "g1", type: "patrol", speed: 2.7, pts: [{x:3.0,y:23.5},{x:16.5,y:23.5}] },
+          { id: "g2", type: "tsa", speed: 0, angle: 1.57, pts: [{x:10.0,y:19.0}] },
+          { id: "g3", type: "patrol", speed: 3.0, pts: [{x:3.0,y:10.4},{x:16.5,y:10.4},{x:16.5,y:15.8},{x:3.0,y:15.8}] }
+        ],
+        crowds: [
+          { x: 4.0, y: 32.0, pts: [{x:3.5,y:32.0},{x:15.5,y:32.0}], speed: 2.1, r: 0.9, label: "Surfboard Tourist" },
+          { x: 14.0, y: 15.0, pts: [{x:11.0,y:15.0},{x:17.2,y:15.0}], speed: 2.3, r: 0.9, label: "Holiday Trolley" }
         ],
         hazards: [
-          { id: "h1", x: 14.5, y: 29.0, r: 2.1, blocks: true, label: "Cleaning Barricade" },
-          { id: "h2", x: 9.8, y: 14.0, r: 1.9, blocks: false, label: "Wet Floor" }
+          { id: "h1", x: 14.15, y: 8.4, r: 2.2, blocks: true, label: "Mop Cart (Seals Restroom!)" },
+          { id: "h2", x: 10.0, y: 15.5, r: 2.0, blocks: false, label: "Freshly Mopped Exit" }
         ],
         props: [
-          { id: "p1", type: "item", item: "breath_mints", x: 3.0, y: 32.5, label: "Grab Breath Mints", bark: "bribe_mints" },
-          { id: "p2", type: "distract", target: "h1", x: 11.5, y: 31.0, label: "Kick Trash Bin (Lure Janitor)", bark: "distract_triggered" },
-          { id: "p3", type: "item", item: "rubber_flipflops", x: 16.5, y: 21.5, label: "Equip Rubber Flip-Flops", bark: "saved_flipflops" },
-          { id: "p4", type: "item", item: "fast_track_pass", x: 2.8, y: 20.5, label: "Grab Fast-Track Sticker", bark: "tsa_bypass" },
-          { id: "p5", type: "cover", x: 7.5, y: 11.5, label: "Read Goa Herald (-25% Suspicion/s)" }
+          { id: "p1", type: "item", item: "breath_mints", x: 2.8, y: 33.5, label: "Grab Spearmint Tin (Bribe Janitor)", bark: "bribe_pickup" },
+          { id: "p2", type: "distract", target: "h1", x: 3.0, y: 11.2, label: "Kick Trash Bin (Lure Janitor Away!)", bark: "distract_triggered" },
+          { id: "p3", type: "item", item: "rubber_flipflops", x: 16.8, y: 22.0, label: "Equip Rubber Flip-Flops (No Slip)", bark: "saved_flipflops" },
+          { id: "p4", type: "item", item: "fast_track_pass", x: 16.8, y: 31.5, label: "Grab Fast-Track Sticker (Skip Frisk)", bark: "tsa_bypass" },
+          { id: "p5", type: "cover", x: 7.5, y: 15.2, label: "Read Goa Herald (-30% Suspicion/s)" },
+          { id: "p6", type: "clipboard", x: 12.2, y: 13.5, label: "Read Janitor Log (Reveal Open Stall!)", bark: "clipboard_clue" }
         ],
         stalls: [
-          { x: 17.0, y: 29.0, open: false, label: "Arrival Stall (Out of Order)" },
-          { x: 14.2, y: 3.0, open: false, label: "Departure Stall #1 (Occupied)" },
-          { x: 17.2, y: 3.0, open: true, label: "Departure Stall #2 (OPEN THRONE!)" }
+          { x: 4.2, y: 3.2, open: false, label: "Cubicle #1" },
+          { x: 10.0, y: 3.2, open: false, label: "Cubicle #2" },
+          { x: 16.0, y: 3.2, open: true, label: "Cubicle #3" }
         ],
         zones: []
       },
       {
         id: 2, iata: "JFK", name: "New York JFK (Terminal 4)",
-        sub: "Luxury Retail Concourse • Segway Patrols & TSA Belt Check",
-        baseTimer: 120, crampInterval: 20, spawnBark: "spawn_jfk",
+        sub: "Concourse B Retail Maze • Chasing Segways, Pretzels & Sealed Restrooms",
+        baseTimer: 80, crampInterval: 16, spawnBark: "spawn_jfk",
         winBark: "First-class porcelain on a coach-class ticket. Worth every forged lounge pass.",
         world: { w: 22, h: 46 }, spawn: { x: 11, y: 43 },
         walls: [
           { x: 0, y: 0, w: 1, h: 46 }, { x: 21, y: 0, w: 1, h: 46 },
           { x: 0, y: 0, w: 22, h: 1 }, { x: 0, y: 45, w: 22, h: 1 },
-          { x: 1, y: 33, w: 7.5, h: 1.4, label: "TSA Stanchion" },
-          { x: 13.5, y: 33, w: 7.5, h: 1.4, label: "TSA X-Ray" },
-          { x: 3, y: 23, w: 5, h: 2.5, label: "5th Ave Duty-Free" },
-          { x: 14, y: 23, w: 5, h: 2.5, label: "Hudson Pretzels" },
-          { x: 1, y: 11.5, w: 8, h: 1.2, label: "VIP Lounge Glass" },
-          { x: 12.5, y: 13.5, w: 4, h: 2.0, label: "Info Pillar" }
+          { x: 1.0, y: 33.0, w: 8.5, h: 1.4, label: "TSA Stanchion Wall" },
+          { x: 12.5, y: 33.0, w: 8.5, h: 1.4, label: "TSA X-Ray Wall" },
+          { x: 3.0, y: 23.0, w: 5.0, h: 2.5, label: "5th Ave Duty-Free" },
+          { x: 14.0, y: 23.0, w: 5.0, h: 2.5, label: "Hudson Pretzels" },
+          { x: 1.0, y: 14.0, w: 8.0, h: 1.2, label: "VIP Lounge Glass" },
+          { x: 12.5, y: 14.0, w: 4.0, h: 2.0, label: "Concourse Pillar" },
+          // Sealed Restroom Wing (Doorway at x: 13.8..17.0, blocked by jh2!)
+          { x: 1.0, y: 8.0, w: 12.8, h: 1.2, label: "Restroom Wing Wall (Sealed)" },
+          { x: 17.0, y: 8.0, w: 4.0, h: 1.2, label: "Restroom Wing Wall" }
         ],
         guards: [
-          { id: "j1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11,y:33}] },
-          { id: "j2", type: "segway", speed: 4.2, pts: [{x:3.5,y:28.5},{x:18.5,y:28.5}] },
-          { id: "j3", type: "segway", speed: 4.3, pts: [{x:10.5,y:29},{x:10.5,y:15}] },
-          { id: "j4", type: "patrol", speed: 2.6, pts: [{x:12,y:6.5},{x:19,y:6.5}] }
+          { id: "j1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11.0,y:33.0}] },
+          { id: "j2", type: "segway", speed: 4.4, pts: [{x:3.0,y:28.5},{x:19.0,y:28.5}] },
+          { id: "j3", type: "segway", speed: 4.5, pts: [{x:10.5,y:29.0},{x:10.5,y:15.5}] },
+          { id: "j4", type: "patrol", speed: 3.0, pts: [{x:3.0,y:10.2},{x:18.5,y:10.2}] }
+        ],
+        crowds: [
+          { x: 5.0, y: 39.0, pts: [{x:3.0,y:39.0},{x:18.5,y:39.0}], speed: 2.5, r: 0.95, label: "Luggage Cart Train" },
+          { x: 15.0, y: 19.5, pts: [{x:3.5,y:19.5},{x:18.5,y:19.5}], speed: 2.4, r: 0.95, label: "Slow Tour Group" }
         ],
         hazards: [
-          { id: "jh1", x: 6.5, y: 38.0, r: 2.0, blocks: false, label: "Iced Latte Spill" },
-          { id: "jh2", x: 15.5, y: 8.5, r: 2.2, blocks: true, label: "Concourse B Mop Cart" }
+          { id: "jh1", x: 11.0, y: 29.0, r: 2.1, blocks: false, label: "Iced Latte Spill" },
+          { id: "jh2", x: 15.4, y: 8.4, r: 2.3, blocks: true, label: "Concourse B Mop Barricade" }
         ],
         props: [
-          { id: "jp1", type: "item", item: "fast_track_pass", x: 18, y: 39.5, label: "Grab CLEAR Fast-Track Pass", bark: "tsa_bypass" },
-          { id: "jp2", type: "pretzel", x: 16.5, y: 26.5, label: "Spicy Jalapeño Pretzel (+25% Spd, -8s)", bark: "spicy_pretzel" },
-          { id: "jp3", type: "item", item: "rubber_flipflops", x: 4.5, y: 26.5, label: "I-Heart-NY Rubber Slides", bark: "saved_flipflops" },
-          { id: "jp4", type: "distract", target: "jh2", x: 11.5, y: 11.0, label: "Toss Duty-Free Coupon (Lure Mop)", bark: "distract_triggered" },
-          { id: "jp5", type: "cover", x: 4.0, y: 15.5, label: "Hide at Newsstand (-25% Suspicion/s)" }
+          { id: "jp1", type: "item", item: "fast_track_pass", x: 18.2, y: 40.5, label: "Grab CLEAR Fast-Track Pass", bark: "tsa_bypass" },
+          { id: "jp2", type: "pretzel", x: 16.5, y: 26.8, label: "Spicy Jalapeño Pretzel (+28% Spd, -8s)", bark: "spicy_pretzel" },
+          { id: "jp3", type: "item", item: "rubber_flipflops", x: 4.5, y: 26.8, label: "I-Heart-NY Rubber Slides", bark: "saved_flipflops" },
+          { id: "jp4", type: "distract", target: "jh2", x: 3.5, y: 11.2, label: "Toss 80%-Off Coupon (Lure Mop Cart!)", bark: "toss_duty_free_coupon" },
+          { id: "jp5", type: "cover", x: 4.0, y: 16.5, label: "Hide at Newsstand (-30% Suspicion/s)" },
+          { id: "jp6", type: "clipboard", x: 18.2, y: 15.5, label: "Check Custodial Tablet (Map Open Stall)", bark: "clipboard_clue" }
         ],
         stalls: [
-          { x: 3.0, y: 3.5, open: false, label: "VIP Lounge Stall (Decoy: Renovating!)" },
-          { x: 15.0, y: 3.0, open: false, label: "Gate B42 Stall #1 (Locked)" },
-          { x: 18.8, y: 3.0, open: true, label: "Gate B42 Stall #2 (OPEN THRONE!)" }
+          { x: 4.0, y: 3.2, open: false, label: "VIP Suite #1" },
+          { x: 11.0, y: 3.2, open: false, label: "Gate B42 Stall #2" },
+          { x: 18.0, y: 3.2, open: true, label: "Gate B42 Stall #3" }
         ],
         zones: []
       },
       {
         id: 3, iata: "LHR", name: "London Heathrow (Terminal 5)",
-        sub: "Concourses A/B/C • Reversing Walkways & Transit Shuttle Doors",
-        baseTimer: 135, crampInterval: 18, spawnBark: "spawn_lhr",
+        sub: "Reversing Travelators, Transit Shuttle Doors & Sealed Concourse C Loos",
+        baseTimer: 92, crampInterval: 16, spawnBark: "spawn_lhr",
         winBark: "God save the King, and God save whoever left a spare roll in Concourse C.",
         world: { w: 22, h: 52 }, spawn: { x: 11, y: 49 },
         walls: [
           { x: 0, y: 0, w: 1, h: 52 }, { x: 21, y: 0, w: 1, h: 52 },
           { x: 0, y: 0, w: 22, h: 1 }, { x: 0, y: 51, w: 22, h: 1 },
-          { x: 2.5, y: 42, w: 9.5, h: 1.5, label: "Polite British Queue" },
-          { x: 1, y: 33.5, w: 7, h: 1.4, label: "100ml Baggie Desk" },
-          { x: 14, y: 33.5, w: 7, h: 1.4, label: "Border Stanchion" },
-          { x: 1, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" },
-          { x: 13.5, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" }
+          { x: 2.5, y: 42.0, w: 9.5, h: 1.5, label: "Polite British Queue" },
+          { x: 1.0, y: 33.5, w: 8.5, h: 1.4, label: "100ml Baggie Desk" },
+          { x: 12.5, y: 33.5, w: 8.5, h: 1.4, label: "Border Stanchion" },
+          { x: 1.0, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" },
+          { x: 13.5, y: 17.5, w: 7.5, h: 1.5, label: "Shuttle Platform" },
+          // Sealed Restroom Wing (Doorway at x: 14.8..18.0, blocked by lh2!)
+          { x: 1.0, y: 8.2, w: 13.8, h: 1.2, label: "Concourse C Loo Wall (Sealed)" },
+          { x: 18.0, y: 8.2, w: 3.0, h: 1.2, label: "Concourse C Loo Wall" }
         ],
         guards: [
-          { id: "l1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11,y:33.5}] },
-          { id: "l2", type: "segway", speed: 4.2, pts: [{x:11,y:29},{x:11,y:20}] },
-          { id: "l3", type: "patrol", speed: 2.7, pts: [{x:3,y:13.5},{x:19,y:13.5}] },
-          { id: "l4", type: "patrol", speed: 2.4, pts: [{x:4,y:6.5},{x:18,y:6.5}] }
+          { id: "l1", type: "tsa", speed: 0, angle: 1.57, pts: [{x:11.0,y:33.5}] },
+          { id: "l2", type: "segway", speed: 4.4, pts: [{x:11.0,y:29.5},{x:11.0,y:20.0}] },
+          { id: "l3", type: "patrol", speed: 3.0, pts: [{x:3.0,y:13.5},{x:19.0,y:13.5}] },
+          { id: "l4", type: "patrol", speed: 2.9, pts: [{x:3.5,y:10.2},{x:18.5,y:10.2}] }
+        ],
+        crowds: [
+          { x: 15.0, y: 38.0, pts: [{x:3.0,y:38.0},{x:18.5,y:38.0}], speed: 2.4, r: 0.95, label: "Tea Trolley Cart" }
         ],
         hazards: [
-          { id: "lh1", x: 11, y: 26, r: 2.1, blocks: false, label: "Spilled Earl Grey" },
-          { id: "lh2", x: 16.5, y: 9.0, r: 2.2, blocks: true, label: "Concourse C Mop Cart" }
+          { id: "lh1", x: 11.0, y: 26.0, r: 2.2, blocks: false, label: "Spilled Earl Grey" },
+          { id: "lh2", x: 16.4, y: 8.6, r: 2.3, blocks: true, label: "Concourse C Mop Barricade" }
         ],
         props: [
           { id: "lp1", type: "item", item: "fast_track_pass", x: 18.5, y: 46.5, label: "Royal Fast-Track Badge", bark: "tsa_bypass" },
           { id: "lp2", type: "item", item: "rubber_flipflops", x: 3.0, y: 30.0, label: "Union Jack Rubber Wellies", bark: "saved_flipflops" },
-          { id: "lp3", type: "distract", target: "lh2", x: 6.0, y: 10.5, label: "Tip Newspaper Rack (Lure Mop)", bark: "distract_triggered" }
+          { id: "lp3", type: "distract", target: "lh2", x: 3.5, y: 11.2, label: "Tip Tabloid Rack (Lure Loo Janitor!)", bark: "distract_triggered" },
+          { id: "lp4", type: "clipboard", x: 18.5, y: 14.8, label: "Loo Maintenance Roster (Map Open Stall)", bark: "clipboard_clue" }
         ],
         stalls: [
-          { x: 3.0, y: 3.0, open: false, label: "Cubicle #1 (Jammed)" },
-          { x: 18.5, y: 3.0, open: true, label: "Concourse C Cubicle #3 (OPEN THRONE!)" }
+          { x: 4.0, y: 3.2, open: false, label: "Cubicle #1" },
+          { x: 11.0, y: 3.2, open: false, label: "Cubicle #2" },
+          { x: 18.0, y: 3.2, open: true, label: "Cubicle #3" }
         ],
         zones: [
           { type: "walkway", x: 15.0, y: 21.5, w: 3.2, h: 9.0, dy: -2.8, label: "Reversing Travelator" },
-          { type: "shuttle", x: 8.5, y: 17.5, w: 5.0, h: 1.5, openSec: 5, closedSec: 3, label: "T5 Transit Shuttle Gate" }
+          { type: "shuttle", x: 8.5, y: 17.5, w: 5.0, h: 1.5, openSec: 4.5, closedSec: 3.2, label: "T5 Transit Shuttle Gate" }
         ]
       },
       {
         id: 4, iata: "SIN", name: "Singapore Changi (Jewel)",
-        sub: "Rain Vortex Link Bridge • 1.5x Waterfall Cramp Hazard & Robo-Scrubbers",
-        baseTimer: 150, crampInterval: 18, spawnBark: "spawn_sin",
+        sub: "1.5x Waterfall Cramp Hazard, Selfie Mobs, Robo-Scrubbers & Sealed Suite",
+        baseTimer: 102, crampInterval: 15, spawnBark: "spawn_sin",
         winBark: "Cleanest restroom in Asia, and I made it with seconds of structural integrity left.",
         world: { w: 24, h: 54 }, spawn: { x: 12, y: 51 },
         walls: [
           { x: 0, y: 0, w: 1, h: 54 }, { x: 23, y: 0, w: 1, h: 54 },
           { x: 0, y: 0, w: 24, h: 1 }, { x: 0, y: 53, w: 24, h: 1 },
-          { x: 3.5, y: 43, w: 7, h: 1.6, label: "Selfie Stick Mob" },
-          { x: 9.5, y: 24.5, w: 5, h: 5, label: "Rain Vortex Basin" },
-          { x: 13.5, y: 16, w: 6.5, h: 1.6, label: "Tripod Blockade" }
+          { x: 3.5, y: 43.0, w: 7.0, h: 1.6, label: "Selfie Stick Mob" },
+          { x: 9.5, y: 24.5, w: 5.0, h: 5.0, label: "Rain Vortex Basin" },
+          { x: 13.5, y: 16.0, w: 6.5, h: 1.6, label: "Tripod Blockade" },
+          // Sealed Sanctuary Restroom Wing (Doorway at x: 15.8..19.0, blocked by sh2!)
+          { x: 1.0, y: 8.0, w: 14.8, h: 1.2, label: "Jewel Sanctuary Wall (Sealed)" },
+          { x: 19.0, y: 8.0, w: 4.0, h: 1.2, label: "Jewel Sanctuary Wall" }
         ],
         guards: [
-          { id: "s1", type: "segway", speed: 4.3, pts: [{x:3,y:38},{x:20,y:38}] },
-          { id: "s2", type: "patrol", speed: 2.6, pts: [{x:4,y:32},{x:4,y:20}] },
-          { id: "s3", type: "patrol", speed: 2.6, pts: [{x:20,y:20},{x:20,y:32}] },
-          { id: "s4", type: "patrol", speed: 2.8, pts: [{x:4,y:6.5},{x:20,y:6.5}] }
+          { id: "s1", type: "segway", speed: 4.5, pts: [{x:3.0,y:38.0},{x:20.0,y:38.0}] },
+          { id: "s2", type: "patrol", speed: 2.9, pts: [{x:4.0,y:32.0},{x:4.0,y:20.0}] },
+          { id: "s3", type: "patrol", speed: 2.9, pts: [{x:20.0,y:20.0},{x:20.0,y:32.0}] },
+          { id: "s4", type: "patrol", speed: 3.1, pts: [{x:3.5,y:10.5},{x:20.0,y:10.5}] }
+        ],
+        crowds: [
+          { x: 12.0, y: 34.5, pts: [{x:3.5,y:34.5},{x:20.5,y:34.5}], speed: 2.6, r: 1.0, label: "InfluencerLivestream Crew" }
         ],
         hazards: [
-          { id: "sh1", x: 14, y: 46, r: 2.1, blocks: false, robo: true, label: "Robo-Scrubber #A1" },
-          { id: "sh2", x: 17.5, y: 8.5, r: 2.2, blocks: true, label: "Jewel Restroom Custodian" }
+          { id: "sh1", x: 14.0, y: 46.0, r: 2.2, blocks: false, robo: true, label: "Robo-Scrubber #A1" },
+          { id: "sh2", x: 17.4, y: 8.4, r: 2.3, blocks: true, label: "Jewel Restroom Custodian" }
         ],
         props: [
-          { id: "sp1", type: "item", item: "rubber_flipflops", x: 19.5, y: 48, label: "Botanical Non-Slip Sandals", bark: "saved_flipflops" },
-          { id: "sp2", type: "item", item: "breath_mints", x: 20.5, y: 26.5, label: "Pandan Breath Mints", bark: "bribe_mints" },
-          { id: "sp3", type: "distract", target: "sh2", x: 11.5, y: 10.0, label: "Kaya Toast Voucher Drop", bark: "distract_triggered" },
-          { id: "sp4", type: "cover", x: 11.5, y: 19.0, label: "Bamboo Fern Alcove (-25% Suspicion/s)" }
+          { id: "sp1", type: "item", item: "rubber_flipflops", x: 19.5, y: 48.0, label: "Botanical Non-Slip Sandals", bark: "saved_flipflops" },
+          { id: "sp2", type: "item", item: "breath_mints", x: 20.5, y: 26.5, label: "Pandan Breath Mints (Bribe Janitor)", bark: "bribe_pickup" },
+          { id: "sp3", type: "distract", target: "sh2", x: 4.0, y: 11.5, label: "Drop Kaya Toast Voucher (Lure Janitor!)", bark: "toss_duty_free_coupon" },
+          { id: "sp4", type: "cover", x: 11.5, y: 19.0, label: "Bamboo Fern Alcove (-30% Suspicion/s)" },
+          { id: "sp5", type: "clipboard", x: 4.0, y: 16.5, label: "Smart-Loo Sensor Screen (Map Open Stall)", bark: "clipboard_clue" }
         ],
         stalls: [
-          { x: 3.5, y: 3.0, open: false, label: "Skytrain Stall (Occupied)" },
-          { x: 19.5, y: 3.0, open: true, label: "Jewel Sanctuary Suite (OPEN THRONE!)" }
+          { x: 4.5, y: 3.2, open: false, label: "Sanctuary Stall #1" },
+          { x: 12.0, y: 3.2, open: false, label: "Sanctuary Stall #2" },
+          { x: 19.5, y: 3.2, open: true, label: "Sanctuary Stall #3" }
         ],
         zones: [
           { type: "waterfall", x: 12.0, y: 27.0, r: 7.5, label: "Rain Vortex 1.5x Cramp Zone" }
@@ -442,43 +1012,52 @@
       },
       {
         id: 5, iata: "DXB-HND", name: "Dubai (T3) -> Tokyo Haneda (T3) Finale",
-        sub: "Perfume Spritzers, APM Train Doors & 12-Button Bidet Boss",
-        baseTimer: 180, crampInterval: 16, spawnBark: "spawn_dxb",
+        sub: "Perfume Spritzers, APM Train, Sealed Suite & 12-Button Bidet Boss",
+        baseTimer: 115, crampInterval: 14, spawnBark: "spawn_dxb",
         winBark: "Heated seat. Warm cedar mist. Gentle birdsong chime. Porcelain nirvana achieved.",
         world: { w: 24, h: 60 }, spawn: { x: 12, y: 57 },
         walls: [
           { x: 0, y: 0, w: 1, h: 60 }, { x: 23, y: 0, w: 1, h: 60 },
           { x: 0, y: 0, w: 24, h: 1 }, { x: 0, y: 59, w: 24, h: 1 },
-          { x: 4, y: 49, w: 6.5, h: 1.8, label: "Gold Bullion Kiosk" },
-          { x: 1, y: 29, w: 8, h: 1.6, label: "APM Platform" },
-          { x: 15, y: 29, w: 8, h: 1.6, label: "APM Platform" },
-          { x: 1, y: 18, w: 7.5, h: 1.4, label: "HND Customs" },
-          { x: 15.5, y: 18, w: 7.5, h: 1.4, label: "HND Customs" }
+          { x: 4.0, y: 49.0, w: 6.5, h: 1.8, label: "Gold Bullion Kiosk" },
+          { x: 1.0, y: 29.0, w: 8.0, h: 1.6, label: "APM Platform" },
+          { x: 15.0, y: 29.0, w: 8.0, h: 1.6, label: "APM Platform" },
+          { x: 1.0, y: 18.0, w: 9.5, h: 1.4, label: "HND Customs Wall" },
+          { x: 13.5, y: 18.0, w: 9.5, h: 1.4, label: "HND Customs Wall" },
+          // Sealed Washlet Wing (Doorway at x: 16.0..19.4, blocked by dh2!)
+          { x: 1.0, y: 8.0, w: 15.0, h: 1.2, label: "Washlet Wing Wall (Sealed)" },
+          { x: 19.4, y: 8.0, w: 3.6, h: 1.2, label: "Washlet Wing Wall" }
         ],
         guards: [
-          { id: "d1", type: "segway", speed: 4.5, pts: [{x:3,y:53},{x:20.5,y:53}] },
-          { id: "d2", type: "patrol", speed: 2.8, pts: [{x:3,y:38},{x:20.5,y:38}] },
-          { id: "d3", type: "tsa", speed: 0, angle: 1.57, pts: [{x:12,y:18}] },
-          { id: "d4", type: "segway", speed: 4.4, pts: [{x:3.5,y:6.5},{x:20.5,y:6.5}] }
+          { id: "d1", type: "segway", speed: 4.7, pts: [{x:3.0,y:53.0},{x:20.5,y:53.0}] },
+          { id: "d2", type: "patrol", speed: 3.1, pts: [{x:3.0,y:38.0},{x:20.5,y:38.0}] },
+          { id: "d3", type: "tsa", speed: 0, angle: 1.57, pts: [{x:12.0,y:18.0}] },
+          { id: "d4", type: "segway", speed: 4.6, pts: [{x:3.5,y:10.5},{x:20.5,y:10.5}] }
+        ],
+        crowds: [
+          { x: 12.0, y: 41.0, pts: [{x:3.5,y:41.0},{x:20.0,y:41.0}], speed: 2.7, r: 1.0, label: "Duty-Free Shopper Crowd" },
+          { x: 12.0, y: 23.0, pts: [{x:3.5,y:23.0},{x:20.0,y:23.0}], speed: 2.8, r: 1.0, label: "Haneda Tour Group" }
         ],
         hazards: [
-          { id: "dh1", x: 12, y: 46, r: 2.1, blocks: false, label: "Polished Marble Slip" },
-          { id: "dh2", x: 18, y: 8.5, r: 2.2, blocks: true, label: "Haneda VIP Attendant" }
+          { id: "dh1", x: 12.0, y: 46.0, r: 2.2, blocks: false, label: "Polished Marble Slip" },
+          { id: "dh2", x: 17.7, y: 8.4, r: 2.3, blocks: true, label: "Haneda VIP Attendant" }
         ],
         props: [
-          { id: "dp1", type: "item", item: "rubber_flipflops", x: 20, y: 55, label: "Gold Hotel Slippers", bark: "saved_flipflops" },
-          { id: "dp2", type: "item", item: "fast_track_pass", x: 3, y: 35, label: "APEC Fast-Track Card", bark: "tsa_bypass" },
-          { id: "dp3", type: "item", item: "breath_mints", x: 20, y: 24, label: "Matcha Breath Mints", bark: "bribe_mints" },
-          { id: "dp4", type: "distract", target: "dh2", x: 5, y: 9.5, label: "Tokyo Banana Restock Shout", bark: "distract_triggered" }
+          { id: "dp1", type: "item", item: "rubber_flipflops", x: 20.0, y: 55.0, label: "Gold Hotel Slippers (No Slip)", bark: "saved_flipflops" },
+          { id: "dp2", type: "item", item: "fast_track_pass", x: 3.0, y: 35.0, label: "APEC Fast-Track Card", bark: "tsa_bypass" },
+          { id: "dp3", type: "item", item: "breath_mints", x: 20.0, y: 24.0, label: "Matcha Mints (Bribe Attendant)", bark: "bribe_pickup" },
+          { id: "dp4", type: "distract", target: "dh2", x: 4.0, y: 11.5, label: "Shout 'Tokyo Banana Restock!' (Lure)", bark: "toss_duty_free_coupon" },
+          { id: "dp5", type: "clipboard", x: 19.5, y: 14.0, label: "Washlet Control Map (Reveal Open Suite)", bark: "clipboard_clue" }
         ],
         stalls: [
-          { x: 3.5, y: 3.0, open: false, label: "HND Stall #1 (Firmware Updating)" },
-          { x: 20.0, y: 3.0, open: true, bidetBoss: true, label: "WASHLET-9000 Master Suite (BOSS LOCK!)" }
+          { x: 4.5, y: 3.2, open: false, label: "HND Suite #1" },
+          { x: 12.0, y: 3.2, open: false, label: "HND Suite #2" },
+          { x: 19.5, y: 3.2, open: true, bidetBoss: true, label: "WASHLET-9000 Master Suite" }
         ],
         zones: [
-          { type: "perfume", x: 7.5, y: 43.0, r: 2.3, cd: 0, label: "Oud Perfume Spritzer (2s Stun)" },
-          { type: "perfume", x: 16.5, y: 36.0, r: 2.3, cd: 0, label: "Cologne Spritzer (2s Stun)" },
-          { type: "shuttle", x: 9.0, y: 29.0, w: 6.0, h: 1.6, openSec: 4.5, closedSec: 3.0, label: "DXB-HND APM Train Doors" }
+          { type: "perfume", x: 7.5, y: 43.0, r: 2.4, cd: 0, label: "Oud Perfume Spritzer (2s Stun)" },
+          { type: "perfume", x: 16.5, y: 36.0, r: 2.4, cd: 0, label: "Cologne Spritzer (2s Stun)" },
+          { type: "shuttle", x: 9.0, y: 29.0, w: 6.0, h: 1.6, openSec: 4.2, closedSec: 3.2, label: "DXB-HND APM Train Doors" }
         ]
       }
     ];
@@ -498,7 +1077,9 @@
       { k: "非常", s: "SECURITY", ok: false }
     ];
 
-    // --- Procedural WebAudio Synthesizer ---
+    // =========================================================================
+    // 4. PROCEDURAL WEBAUDIO SYNTHESIZER & GRAVELLY VOICE CADENCE
+    // =========================================================================
     let audioCtx = null;
     function playTone(freq, dur, type = "sawtooth", gainVal = 0.08) {
       try {
@@ -516,15 +1097,41 @@
       } catch (_) {}
     }
 
-    // --- Runtime State ---
+    function playComicStinger(kind) {
+      if (kind === "good") {
+        playTone(440, 0.1, "triangle", 0.09);
+        setTimeout(() => playTone(660, 0.18, "triangle", 0.09), 80);
+      } else if (kind === "bad") {
+        playTone(130, 0.22, "sawtooth", 0.11);
+        setTimeout(() => playTone(88, 0.30, "sawtooth", 0.12), 110);
+      } else {
+        playTone(210, 0.14, "square", 0.07);
+      }
+    }
+
+    // =========================================================================
+    // 5. RUNTIME STATE, DIFFICULTY TUNING & FLOATING CALLOUTS
+    // =========================================================================
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
-    const PPM = 34; // Pixels per meter
+    const facecamCanvas = document.getElementById("facecam-canvas");
+    const facecamCtx = facecamCanvas.getContext("2d");
+    const cutinCanvas = document.getElementById("cutin-face-canvas");
+    const cutinCtx = cutinCanvas.getContext("2d");
+    const menuExprCanvas = document.getElementById("menu-expr-canvas");
+    const menuExprCtx = menuExprCanvas.getContext("2d");
+
+    const PPM = 34;
     let state = "menu"; // menu | playing | bidet | over
+    let difficulty = "standard"; // casual | standard | nightmare
     let activeLvl = null;
     let player = null;
-    let timerSec = 90, crampSec = 25, clenchSec = 0, clenchCd = 0, suspicion = 0;
-    let worldClock = 0, bannerClock = 0, bidetClock = 5.0;
+    let timerSec = 65, crampSec = 18, clenchSec = 0, clenchCd = 0, suspicion = 0;
+    let worldClock = 0, bannerClock = 0, slowMoSec = 0, bidetClock = 5.0;
+    let screenShakeSec = 0, pinkMistSec = 0;
+    let activeExpression = "noir_glare", bannerExpression = "sweating_squint", overrideExprSec = 0;
+    let menuExprIdx = 0;
+    let floatingCallouts = [];
     let dial = { active: false, dx: 0, dy: 0, mag: 0, angle: -1.57, tier: "idle", lastTapMs: 0 };
     let bestRecords = {};
 
@@ -536,6 +1143,35 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
+    function setDifficulty(mode) {
+      difficulty = mode;
+      ["casual", "standard", "nightmare"].forEach(m => {
+        document.getElementById(`diff-${m}`).classList.toggle("active", m === mode);
+      });
+      renderLevelMenu();
+    }
+
+    function getDiffMultipliers() {
+      if (difficulty === "casual") return { time: 1.32, guardSpd: 0.85, suspRate: 0.75 };
+      if (difficulty === "nightmare") return { time: 0.82, guardSpd: 1.18, suspRate: 1.30 };
+      return { time: 1.0, guardSpd: 1.0, suspRate: 1.0 };
+    }
+
+    function cycleMenuExpression() {
+      menuExprIdx = (menuExprIdx + 1) % EXPRESSION_META.length;
+      const m = EXPRESSION_META[menuExprIdx];
+      document.getElementById("menu-expr-title").textContent = `EXPRESSION LAB: ${m.label}`;
+      document.getElementById("menu-expr-desc").textContent = m.desc;
+      playTone(300 + menuExprIdx * 35, 0.1, "triangle", 0.06);
+    }
+
+    function cycleTestExpression() {
+      menuExprIdx = (menuExprIdx + 1) % EXPRESSION_META.length;
+      activeExpression = EXPRESSION_META[menuExprIdx].id;
+      overrideExprSec = 3.0;
+      spawnCallout(player.x, player.y - 0.8, `FACE: ${EXPRESSION_META[menuExprIdx].label}`, "#d69e2e");
+    }
+
     function toggleSafeTitle() {
       const safe = document.getElementById("safe-title-toggle").checked;
       document.getElementById("game-title-heading").textContent =
@@ -545,16 +1181,18 @@
     function renderLevelMenu() {
       const container = document.getElementById("level-list");
       container.innerHTML = "";
+      const mult = getDiffMultipliers();
       LEVELS.forEach(lvl => {
-        const best = bestRecords[lvl.id] ? ` • Best: ${bestRecords[lvl.id].toFixed(1)}s left` : "";
+        const adjTime = Math.round(lvl.baseTimer * mult.time);
+        const best = bestRecords[lvl.id] ? ` • ★ Best: ${bestRecords[lvl.id].toFixed(1)}s` : "";
         const btn = document.createElement("button");
         btn.className = "level-btn";
         btn.innerHTML = `
-          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:13px;">
-            <span>LEVEL ${lvl.id}: ${lvl.iata} — ${lvl.name}</span>
-            <span style="color:var(--crimson);">${lvl.baseTimer}s</span>
+          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:12.5px;">
+            <span>LVL ${lvl.id}: ${lvl.iata} — ${lvl.name}</span>
+            <span style="color:var(--crimson);">${adjTime}s</span>
           </div>
-          <div style="font-size:11px;margin-top:3px;">${lvl.sub}${best}</div>
+          <div style="font-size:10.5px;margin-top:2px;color:#2d3748;font-weight:700;">${lvl.sub}${best}</div>
         `;
         btn.onclick = () => startLevel(lvl.id);
         container.appendChild(btn);
@@ -565,6 +1203,9 @@
       state = "menu";
       document.getElementById("menu-modal").style.display = "flex";
       document.getElementById("hud-panel").style.display = "none";
+      document.getElementById("clench-btn").style.display = "none";
+      document.getElementById("cramp-warning-bar").style.display = "none";
+      document.getElementById("comic-banner").style.display = "none";
       document.getElementById("bidet-modal").style.display = "none";
       document.getElementById("outcome-modal").style.display = "none";
       renderLevelMenu();
@@ -572,16 +1213,35 @@
 
     function startLevel(id) {
       const template = LEVELS.find(l => l.id === id) || LEVELS[0];
+      const mult = getDiffMultipliers();
       activeLvl = JSON.parse(JSON.stringify(template));
+      activeLvl.baseTimer = Math.round(template.baseTimer * mult.time);
+
+      // Shuffle which stall in the Restroom Wing is the Open Throne!
+      const openIdx = Math.floor(Math.random() * activeLvl.stalls.length);
+      activeLvl.stalls.forEach((s, idx) => {
+        s.open = (idx === openIdx);
+        if (template.id === 5 && s.open) s.bidetBoss = true;
+        s.prog = 0;
+        s.inspected = false;
+        s.revealed = false;
+      });
+
       activeLvl.guards.forEach(g => {
         g.x = g.pts[0].x;
         g.y = g.pts[0].y;
+        g.speed *= mult.guardSpd;
         g.wpIdx = g.pts.length > 1 ? 1 : 0;
         g.angle = g.angle || 0;
         g.patCd = 0;
       });
+      (activeLvl.crowds || []).forEach(c => {
+        c.x = c.pts[0].x;
+        c.y = c.pts[0].y;
+        c.wpIdx = 1;
+        c.bumpCd = 0;
+      });
       activeLvl.props.forEach(p => { p.prog = 0; p.done = false; });
-      activeLvl.stalls.forEach(s => { s.prog = 0; s.inspected = false; });
 
       player = {
         x: activeLvl.spawn.x,
@@ -601,36 +1261,71 @@
       clenchCd = 0;
       suspicion = 0;
       worldClock = 0;
+      slowMoSec = 0;
+      screenShakeSec = 0;
+      pinkMistSec = 0;
+      floatingCallouts = [];
       state = "playing";
 
       document.getElementById("menu-modal").style.display = "none";
       document.getElementById("outcome-modal").style.display = "none";
       document.getElementById("bidet-modal").style.display = "none";
       document.getElementById("hud-panel").style.display = "block";
-      showBanner(activeLvl.spawnBark);
-      playTone(95, 0.35, "sawtooth");
+      document.getElementById("clench-btn").style.display = "block";
+      showBanner(activeLvl.spawnBark, false);
+      playComicStinger("neutral");
     }
 
-    function showBanner(key) {
+    function spawnCallout(wx, wy, text, bg = "#c53030") {
+      floatingCallouts.push({ x: wx, y: wy, text, bg, life: 2.2, maxLife: 2.2 });
+    }
+
+    function showBanner(key, withSlowMo = true) {
       const entry = DIALOGUES[key];
       if (!entry) return;
-      document.getElementById("comic-Speaker").textContent = entry[0];
-      document.getElementById("comic-text").textContent = `"${entry[1]}"`;
+      bannerExpression = entry.expr || "sweating_squint";
+      activeExpression = bannerExpression;
+      overrideExprSec = 3.2;
+
+      document.getElementById("comic-Speaker").textContent = entry.speaker;
+      const meta = EXPRESSION_META.find(m => m.id === bannerExpression);
+      document.getElementById("comic-expr-pill").textContent = `FACE: ${meta ? meta.label : bannerExpression.toUpperCase()}`;
+      document.getElementById("comic-text").textContent = `"${entry.text}"`;
+      document.getElementById("comic-effect-tag").textContent = entry.effect || "";
       document.getElementById("comic-banner").style.display = "block";
-      bannerClock = 3.2;
+      bannerClock = 4.2;
+
+      if (withSlowMo) {
+        slowMoSec = 1.45; // Tactical comedy slow-mo so player can read & savor the effect!
+      }
+      if (entry.callout && player) {
+        const isGood = ["saved_flipflops", "bribe_mints", "bribe_pickup", "distract_triggered", "tsa_bypass", "tsa_bypass_used", "clipboard_clue"].includes(key);
+        spawnCallout(player.x, player.y - 0.9, entry.callout, isGood ? "#2f855a" : "#c53030");
+      }
+    }
+
+    function dismissBanner() {
+      bannerClock = 0;
+      slowMoSec = 0;
+      document.getElementById("comic-banner").style.display = "none";
     }
 
     function triggerClench() {
       if (state !== "playing" || clenchSec > 0 || clenchCd > 0) return;
-      clenchSec = 1.5;
-      clenchCd = 12.0;
+      clenchSec = 1.6;
+      clenchCd = 11.0;
       crampSec += 5.0;
-      playTone(320, 0.18, "triangle");
+      activeExpression = "iron_clench";
+      overrideExprSec = 1.6;
+      spawnCallout(player.x, player.y - 0.9, "🍑 IRON CLENCH! (+5s CRAMP DELAY)", "#3182ce");
+      playComicStinger("good");
     }
 
-    // --- Center Thumb Dial Input (X: 50%, Y: 78% of screen height) ---
+    // =========================================================================
+    // 6. CENTER THUMB DIAL INPUT
+    // =========================================================================
     function getDialCenter() {
-      return { x: canvas.width * 0.5, y: canvas.height * 0.78, maxR: 72 };
+      return { x: canvas.width * 0.5, y: canvas.height * 0.80, maxR: 68 };
     }
 
     function updateDialVector(clientX, clientY) {
@@ -683,7 +1378,6 @@
       if (e.code === "Space") triggerClench();
     });
 
-    // --- Raycast Segment vs AABB Occlusion Check ---
     function segmentHitsRect(x0, y0, x1, y1, rx, ry, rw, rh) {
       let t0 = 0, t1 = 1;
       const dx = x1 - x0, dy = y1 - y0;
@@ -713,29 +1407,33 @@
         btn.onclick = () => {
           document.getElementById("bidet-modal").style.display = "none";
           if (b.ok) finishLevel(true);
-          else finishLevel(false, "WRONG BUTTON: EMERGENCY SIREN & TURBO GEYSER!", "That wasn't 'Open Lid'—that was 'Medical Alert & Max Pressure Ceiling Jet.'");
+          else finishLevel(false, "WRONG BUTTON: EMERGENCY SIREN & TURBO GEYSER!", "That wasn't 'Open Lid'—that was 'Medical Alert & Max Pressure Ceiling Jet.'", "bergamot_stun");
         };
         grid.appendChild(btn);
       });
       document.getElementById("bidet-modal").style.display = "flex";
     }
 
-    function finishLevel(won, failTitle = "", failBark = "") {
+    function finishLevel(won, failTitle = "", failBark = "", endExpr = null) {
       state = "over";
       document.getElementById("outcome-modal").style.display = "flex";
+      document.getElementById("cramp-warning-bar").style.display = "none";
+      const outCanvas = document.getElementById("outcome-face-canvas");
+      drawJohnnyExpression(outCanvas.getContext("2d"), 76, 76, endExpr || (won ? "smirk_sweat" : "freeze_frame_despair"), worldClock);
+
       const tEl = document.getElementById("outcome-title");
       tEl.textContent = won ? "THRONE SECURED!" : failTitle;
       tEl.style.color = won ? "var(--emerald)" : "var(--crimson)";
       document.getElementById("outcome-sub").textContent = `${activeLvl.iata} — ${activeLvl.name}`;
       document.getElementById("outcome-bark").textContent = `"${won ? activeLvl.winBark : failBark}"`;
       document.getElementById("outcome-stats").textContent = won
-        ? `Bowel Clock Remaining: ${timerSec.toFixed(1)}s`
+        ? `Bowel Clock Remaining: ${timerSec.toFixed(1)}s (${difficulty.toUpperCase()})`
         : `Remaining Clock at Incident: ${timerSec.toFixed(1)}s`;
       if (won) {
         bestRecords[activeLvl.id] = Math.max(bestRecords[activeLvl.id] || 0, timerSec);
-        playTone(520, 0.35, "sine");
+        playComicStinger("good");
       } else {
-        playTone(75, 0.55, "sawtooth");
+        playComicStinger("bad");
       }
     }
 
@@ -751,52 +1449,80 @@
       }
     }
 
-    // --- Main Simulation Tick ---
+    // =========================================================================
+    // 7. MAIN SIMULATION LOOP & MULTI-GATE STEALTH PUZZLE ENGINE
+    // =========================================================================
     let lastTime = performance.now();
     function loop(now) {
-      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      const rawDt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      if (state === "bidet") {
-        bidetClock -= dt;
+      if (state === "menu") {
+        worldClock += rawDt;
+        drawJohnnyExpression(menuExprCtx, 56, 56, EXPRESSION_META[menuExprIdx].id, worldClock);
+      } else if (state === "bidet") {
+        bidetClock -= rawDt;
         document.getElementById("bidet-timer-label").textContent =
           `ELECTRONIC LID LOCKED! PRESS [開 / OPEN] IN ${Math.max(0, bidetClock).toFixed(1)}s!`;
         if (bidetClock <= 0) {
           document.getElementById("bidet-modal").style.display = "none";
-          finishLevel(false, "CODE BROWN AT THE FINISH LINE", "Five seconds expired staring at kanji buttons while the lid stayed locked.");
+          finishLevel(false, "CODE BROWN AT THE FINISH LINE", "Five seconds expired staring at kanji buttons while the lid stayed locked.", "freeze_frame_despair");
         }
       } else if (state === "playing" && activeLvl) {
-        updateSimulation(dt);
+        if (slowMoSec > 0) slowMoSec = Math.max(0, slowMoSec - rawDt);
+        const dt = slowMoSec > 0 ? rawDt * 0.22 : rawDt;
+        updateSimulation(dt, rawDt);
         renderWorld();
       }
       requestAnimationFrame(loop);
     }
 
-    function updateSimulation(dt) {
-      worldClock += dt;
+    function updateSimulation(dt, rawDt) {
+      worldClock += rawDt;
       if (bannerClock > 0) {
-        bannerClock -= dt;
+        bannerClock -= rawDt;
+        drawJohnnyExpression(cutinCtx, 68, 68, bannerExpression, worldClock);
         if (bannerClock <= 0) document.getElementById("comic-banner").style.display = "none";
       }
+      if (overrideExprSec > 0) overrideExprSec = Math.max(0, overrideExprSec - rawDt);
+      if (screenShakeSec > 0) screenShakeSec = Math.max(0, screenShakeSec - rawDt);
+      if (pinkMistSec > 0) pinkMistSec = Math.max(0, pinkMistSec - rawDt);
+
       if (clenchCd > 0) clenchCd = Math.max(0, clenchCd - dt);
       if (player.boostSec > 0) player.boostSec = Math.max(0, player.boostSec - dt);
       if (player.stunSec > 0) player.stunSec = Math.max(0, player.stunSec - dt);
       if (player.patSec > 0) player.patSec = Math.max(0, player.patSec - dt);
 
+      // Update floating world callouts
+      for (let i = floatingCallouts.length - 1; i >= 0; i--) {
+        floatingCallouts[i].life -= rawDt;
+        floatingCallouts[i].y -= rawDt * 0.85;
+        if (floatingCallouts[i].life <= 0) floatingCallouts.splice(i, 1);
+      }
+
       // Build dynamic colliders (walls + active mop barricades + closed shuttle doors)
       const colliders = activeLvl.walls.slice();
+      let barricadeActive = false;
       activeLvl.hazards.forEach(h => {
         if (h.robo) {
           h.baseX = h.baseX || h.x;
-          h.x = h.baseX + Math.sin(worldClock * 1.5) * 2.5;
+          h.x = h.baseX + Math.sin(worldClock * 1.6) * 2.6;
+        }
+        if (h.luredTo) {
+          const dx = h.luredTo.x - h.x, dy = h.luredTo.y - h.y;
+          const d = Math.hypot(dx, dy);
+          if (d > 0.2) { h.x += (dx / d) * 3.8 * dt; h.y += (dy / d) * 3.8 * dt; }
         }
         if (h.blocks && !h.cleared) {
-          if (Math.hypot(player.x - h.x, player.y - h.y) <= h.r + 0.7 && player.items.includes("breath_mints")) {
+          barricadeActive = true;
+          if (Math.hypot(player.x - h.x, player.y - h.y) <= h.r + 0.8 && player.items.includes("breath_mints")) {
             player.items = player.items.filter(i => i !== "breath_mints");
             h.cleared = true;
-            showBanner("bribe_mints");
+            h.luredTo = { x: h.x - 3.5, y: h.y + 1.5 };
+            showBanner("bribe_mints", true);
+            playComicStinger("good");
           } else {
-            colliders.push({ x: h.x - h.r * 0.6, y: h.y - h.r * 0.6, w: h.r * 1.2, h: h.r * 1.2 });
+            colliders.push({ x: h.x - h.r * 0.78, y: h.y - h.r * 0.65, w: h.r * 1.56, h: h.r * 1.3 });
           }
         }
       });
@@ -816,16 +1542,41 @@
           }
         } else if (z.type === "waterfall") {
           if (Math.hypot(player.x - z.x, player.y - z.y) <= z.r) {
-            if (!player.warnedWater) { showBanner("waterfall_warn"); player.warnedWater = true; }
+            if (!player.warnedWater) { showBanner("waterfall_warn", true); player.warnedWater = true; }
             inWaterfall = true;
           }
         } else if (z.type === "perfume") {
           z.cd = Math.max(0, (z.cd || 0) - dt);
           if (z.cd <= 0 && Math.hypot(player.x - z.x, player.y - z.y) <= z.r) {
-            z.cd = 6.0;
+            z.cd = 6.5;
             player.stunSec = 2.0;
-            showBanner("perfume_stun");
+            pinkMistSec = 2.0;
+            screenShakeSec = 0.4;
+            showBanner("perfume_stun", true);
+            playComicStinger("bad");
           }
+        }
+      });
+
+      // Moving Passenger Crowds (Tourists / Trolleys / Selfie Mobs)
+      (activeLvl.crowds || []).forEach(c => {
+        c.bumpCd = Math.max(0, (c.bumpCd || 0) - dt);
+        const tgt = c.pts[c.wpIdx];
+        const dx = tgt.x - c.x, dy = tgt.y - c.y;
+        const d = Math.hypot(dx, dy);
+        if (d <= c.speed * dt) {
+          c.x = tgt.x; c.y = tgt.y;
+          c.wpIdx = (c.wpIdx + 1) % c.pts.length;
+        } else {
+          c.x += (dx / d) * c.speed * dt;
+          c.y += (dy / d) * c.speed * dt;
+        }
+        if (c.bumpCd <= 0 && Math.hypot(player.x - c.x, player.y - c.y) <= c.r + player.r) {
+          c.bumpCd = 3.5;
+          timerSec = Math.max(0, timerSec - 2.0);
+          screenShakeSec = 0.35;
+          showBanner("crowd_jostle", false);
+          playComicStinger("bad");
         }
       });
 
@@ -838,10 +1589,10 @@
         vx = 0; vy = 0;
       } else if (dial.tier !== "idle") {
         let spd = dial.tier === "sprint" ? 5.5 : 3.2;
-        if (player.boostSec > 0) spd *= 1.25;
+        if (player.boostSec > 0) spd *= 1.28;
         vx = Math.cos(dial.angle) * spd;
         vy = Math.sin(dial.angle) * spd;
-        player.walkPhase += dt * (dial.tier === "sprint" ? 14 : 8);
+        player.walkPhase += dt * (dial.tier === "sprint" ? 15 : 8);
       }
       vy += conveyorVy;
 
@@ -858,68 +1609,80 @@
         if (!h.cleared && Math.hypot(player.x - h.x, player.y - h.y) <= h.r) {
           if (!player.flipflops && player.slipSec <= 0 && Math.hypot(vx, vy) > 0.2) {
             player.slipSec = 2.0;
+            screenShakeSec = 0.45;
             const a = dial.angle || -1.57;
-            player.slipVx = Math.cos(a) * 6.0;
-            player.slipVy = Math.sin(a) * 6.0;
-            showBanner("hit_wet_floor");
+            player.slipVx = Math.cos(a) * 6.2;
+            player.slipVy = Math.sin(a) * 6.2;
+            showBanner("hit_wet_floor", true);
+            playComicStinger("bad");
           }
         }
       });
 
-      // Bowel Timer & Cramp Wave
+      // Bowel Timer & Pre-Cramp Warning + Cramp Wave Strike
+      const crampWarnEl = document.getElementById("cramp-warning-bar");
       if (clenchSec > 0) {
         clenchSec = Math.max(0, clenchSec - dt);
+        crampWarnEl.style.display = "none";
       } else {
         const drain = dial.tier === "sprint" ? 1.25 : 1.0;
         timerSec = Math.max(0, timerSec - dt * drain);
         crampSec -= dt * (inWaterfall ? 1.5 : 1.0);
+
+        if (crampSec <= 3.0 && crampSec > 0) {
+          crampWarnEl.style.display = "block";
+          crampWarnEl.textContent = `⚠ GUT RUMBLE IN ${crampSec.toFixed(1)}s — STOP SPRINTING OR HIT CLENCH!`;
+        } else {
+          crampWarnEl.style.display = "none";
+        }
+
         if (crampSec <= 0) {
           crampSec = activeLvl.crampInterval;
-          playTone(80, 0.3, "sawtooth");
-          if (dial.tier === "sprint") timerSec = Math.max(0, timerSec - 3.0);
+          screenShakeSec = 0.5;
+          if (dial.tier === "sprint") {
+            timerSec = Math.max(0, timerSec - 4.5);
+            showBanner("cramp_hit_penalty", true);
+            playComicStinger("bad");
+          } else {
+            spawnCallout(player.x, player.y - 0.8, "CRAMP SURVIVED (0s LOST)", "#2f855a");
+            playTone(110, 0.2, "triangle", 0.06);
+          }
         }
       }
       if (timerSec <= 0) {
-        finishLevel(false, "CODE BROWN: TIMER EXPIRED", "Zero point zero seconds. The noir spotlight hits. A custodian lowers his mop and shakes his head.");
+        finishLevel(false, "CODE BROWN: TIMER EXPIRED", "Zero point zero seconds. The noir spotlight hits. A custodian lowers his mop and shakes his head.", "freeze_frame_despair");
         return;
       }
 
-      // Guards & Vision Cones
+      // Guards, TSA Pat-Down & Active Chase AI
       let spotted = false;
+      const mult = getDiffMultipliers();
       activeLvl.guards.forEach(g => {
         g.patCd = Math.max(0, g.patCd - dt);
-        if (g.type === "tsa" && g.patCd <= 0 && Math.hypot(player.x - g.x, player.y - g.y) <= 2.1) {
-          g.patCd = 10.0;
+        if (g.type === "tsa" && g.patCd <= 0 && Math.hypot(player.x - g.x, player.y - g.y) <= 2.3) {
+          g.patCd = 11.0;
           if (player.items.includes("fast_track_pass")) {
             player.items = player.items.filter(i => i !== "fast_track_pass");
-            showBanner("tsa_bypass");
+            showBanner("tsa_bypass_used", true);
+            playComicStinger("good");
           } else {
-            player.patSec = 6.0;
-            showBanner("tsa_patdown");
+            player.patSec = 5.0;
+            timerSec = Math.max(0, timerSec - 4.0);
+            screenShakeSec = 0.5;
+            showBanner("tsa_patdown", true);
+            playComicStinger("bad");
           }
         }
-        if (g.pts.length > 1 && g.speed > 0) {
-          const tgt = g.pts[g.wpIdx];
-          const dx = tgt.x - g.x, dy = tgt.y - g.y;
-          const d = Math.hypot(dx, dy);
-          if (d <= g.speed * dt) {
-            g.x = tgt.x; g.y = tgt.y;
-            g.wpIdx = (g.wpIdx + 1) % g.pts.length;
-          } else {
-            g.x += (dx / d) * g.speed * dt;
-            g.y += (dy / d) * g.speed * dt;
-            g.angle = Math.atan2(dy, dx);
-          }
-        }
-        // Cone check (45 deg = 0.3927 rad half-angle, 7m range)
+
+        // Cone check (48 deg, 7.2m range)
         const dx = player.x - g.x, dy = player.y - g.y;
         const dist = Math.hypot(dx, dy);
         g.seeing = false;
-        if (!player.inCover && dist <= 7.0) {
+        if (!player.inCover && dist <= 7.2) {
           let diff = (Math.atan2(dy, dx) - g.angle) % (Math.PI * 2);
           if (diff > Math.PI) diff -= Math.PI * 2;
           if (diff < -Math.PI) diff += Math.PI * 2;
-          if (Math.abs(diff) <= 0.393) {
+          if (Math.abs(diff) <= 0.42) {
             const blocked = colliders.some(c => segmentHitsRect(g.x, g.y, player.x, player.y, c.x, c.y, c.w, c.h));
             if (!blocked) {
               g.seeing = true;
@@ -927,37 +1690,73 @@
             }
           }
         }
+
+        // Guard Movement: Active Chase if seeing & suspicion >= 35%, otherwise patrol waypoints
+        if (g.seeing && suspicion >= 35 && g.speed > 0) {
+          const chaseSpd = g.speed * 1.22;
+          g.x += (dx / Math.max(0.1, dist)) * chaseSpd * dt;
+          g.y += (dy / Math.max(0.1, dist)) * chaseSpd * dt;
+          g.angle = Math.atan2(dy, dx);
+        } else if (g.pts.length > 1 && g.speed > 0) {
+          const tgt = g.pts[g.wpIdx];
+          const wdx = tgt.x - g.x, wdy = tgt.y - g.y;
+          const wd = Math.hypot(wdx, wdy);
+          if (wd <= g.speed * dt) {
+            g.x = tgt.x; g.y = tgt.y;
+            g.wpIdx = (g.wpIdx + 1) % g.pts.length;
+          } else {
+            g.x += (wdx / wd) * g.speed * dt;
+            g.y += (wdy / wd) * g.speed * dt;
+            g.angle = Math.atan2(wdy, wdx);
+          }
+        }
       });
 
       if (player.inCover) {
-        suspicion = Math.max(0, suspicion - 25 * dt);
+        suspicion = Math.max(0, suspicion - 30 * dt);
       } else if (spotted) {
-        const rate = dial.tier === "sprint" ? 35 : (dial.tier === "walk" ? 5 : 0);
+        const rate = (dial.tier === "sprint" ? 38 : (dial.tier === "walk" ? 8 : 2)) * mult.suspRate;
         suspicion = Math.min(100, suspicion + rate * dt);
-        if (dial.tier === "sprint" && suspicion > 30 && bannerClock <= 0) showBanner("spotted_waddling");
+        if (dial.tier === "sprint" && suspicion > 28 && bannerClock <= 0) {
+          showBanner("spotted_waddling", true);
+          playComicStinger("bad");
+        }
       } else {
-        suspicion = Math.max(0, suspicion - 12 * dt);
+        suspicion = Math.max(0, suspicion - 11 * dt);
       }
       if (suspicion >= 100) {
-        finishLevel(false, "BUSTED: RANDOM SECONDARY SCREENING", "Dragged into a windowless room by two men in latex gloves while the bowel clock runs out.");
+        finishLevel(false, "BUSTED: RANDOM SECONDARY SCREENING", "Dragged into a windowless room by two men in blue latex gloves while the bowel clock runs out.", "awkward_smile");
         return;
       }
 
-      // Release-to-interact (1.5m radius, 0.6s fill when idle)
+      // Evaluate dynamic protagonist facial expression for Live FaceCam
+      if (overrideExprSec <= 0) {
+        const frac = timerSec / activeLvl.baseTimer;
+        if (clenchSec > 0) activeExpression = "iron_clench";
+        else if (player.slipSec > 0 || player.stunSec > 0) activeExpression = "bergamot_stun";
+        else if (spotted && dial.tier === "sprint") activeExpression = "awkward_smile";
+        else if (frac < 0.18 || suspicion >= 75) activeExpression = "panic_stare";
+        else if (frac < 0.38 || crampSec <= 3.0 || player.patSec > 0) activeExpression = "clenched_grimace";
+        else if (frac < 0.65) activeExpression = "sweating_squint";
+        else activeExpression = "noir_glare";
+      }
+
+      // Release-to-interact (1.6m radius, 0.55s fill when idle)
       let nearObj = null;
       const allInteractables = [...activeLvl.props.filter(p => !p.done), ...activeLvl.stalls];
       allInteractables.forEach(obj => {
         const d = Math.hypot(player.x - obj.x, player.y - obj.y);
-        if (d <= 1.55) nearObj = obj;
+        if (d <= 1.65) nearObj = obj;
         else obj.prog = 0;
       });
 
       const pill = document.getElementById("interact-pill");
       if (nearObj) {
         pill.style.display = "block";
-        pill.textContent = `PAUSE TO INTERACT: ${nearObj.label}`;
+        const isMysteryStall = nearObj.open !== undefined && !nearObj.inspected && !nearObj.revealed;
+        pill.textContent = `PAUSE TO INTERACT: ${isMysteryStall ? nearObj.label + " [MYSTERY DOOR ?]" : nearObj.label}`;
         if (dial.tier === "idle" && player.slipSec <= 0 && player.patSec <= 0) {
-          nearObj.prog = (nearObj.prog || 0) + dt / 0.6;
+          nearObj.prog = (nearObj.prog || 0) + dt / 0.55;
           if (nearObj.prog >= 1.0) {
             nearObj.prog = 0;
             triggerInteractable(nearObj);
@@ -967,30 +1766,48 @@
         pill.style.display = "none";
       }
 
-      updateHudDom();
+      updateHudDom(barricadeActive);
     }
 
     function triggerInteractable(obj) {
-      playTone(440, 0.12, "sine");
-      if (obj.bark) showBanner(obj.bark);
       if (obj.type === "item") {
         if (obj.item === "rubber_flipflops") player.flipflops = true;
         else player.items.push(obj.item);
         obj.done = true;
+        showBanner(obj.bark || "saved_flipflops", true);
+        playComicStinger("good");
       } else if (obj.type === "distract") {
         const h = activeLvl.hazards.find(hz => hz.id === obj.target);
-        if (h) h.cleared = true;
+        if (h) {
+          h.cleared = true;
+          h.luredTo = { x: obj.x, y: obj.y };
+        }
         obj.done = true;
+        showBanner(obj.bark || "distract_triggered", true);
+        playComicStinger("good");
+      } else if (obj.type === "clipboard") {
+        activeLvl.stalls.forEach(s => { s.revealed = true; });
+        obj.done = true;
+        showBanner("clipboard_clue", true);
+        playComicStinger("good");
       } else if (obj.type === "pretzel") {
         player.boostSec = 6.0;
         timerSec = Math.max(0, timerSec - 8.0);
+        screenShakeSec = 0.35;
         obj.done = true;
+        showBanner("spicy_pretzel", true);
+        playComicStinger("bad");
       } else if (obj.type === "cover") {
         player.inCover = true;
+        spawnCallout(player.x, player.y - 0.8, "📰 BLENDING IN COVER (-30% SUSP/s)", "#2f855a");
+        playComicStinger("good");
       } else if (obj.open !== undefined) {
         obj.inspected = true;
         if (!obj.open) {
-          showBanner("locked_stall");
+          timerSec = Math.max(0, timerSec - 1.5);
+          screenShakeSec = 0.3;
+          showBanner("locked_stall", true);
+          playComicStinger("bad");
         } else if (obj.bidetBoss) {
           openBidetModal();
         } else {
@@ -1003,7 +1820,12 @@
       return rects.some(w => cx + r > w.x && cx - r < w.x + w.w && cy + r > w.y && cy - r < w.y + w.h);
     }
 
-    function updateHudDom() {
+    function updateHudDom(barricadeActive) {
+      // Draw Live FaceCam Portrait
+      drawJohnnyExpression(facecamCtx, 64, 60, activeExpression, worldClock);
+      const exprMeta = EXPRESSION_META.find(m => m.id === activeExpression);
+      document.getElementById("facecam-label").textContent = exprMeta ? exprMeta.label : "NOIR GLARE";
+
       const frac = timerSec / activeLvl.baseTimer;
       document.getElementById("hud-level-label").textContent = `${activeLvl.iata} | BOWEL PRESSURE`;
       document.getElementById("hud-timer-val").textContent = `${timerSec.toFixed(1)}s`;
@@ -1014,22 +1836,56 @@
       document.getElementById("hud-susp-val").textContent = `${suspicion.toFixed(0)}%`;
       const sBar = document.getElementById("hud-susp-bar");
       sBar.style.width = `${suspicion.toFixed(0)}%`;
-      sBar.style.background = suspicion >= 80 ? "var(--crimson)" : (suspicion >= 30 ? "var(--amber)" : "var(--paper)");
+      sBar.style.background = suspicion >= 75 ? "var(--crimson)" : (suspicion >= 35 ? "var(--amber)" : "var(--paper)");
+
+      // Dedicated Clench Button status
+      const cSub = document.getElementById("clench-btn-sub");
+      const cBtn = document.getElementById("clench-btn");
+      if (clenchSec > 0) {
+        cSub.textContent = "ACTIVE!";
+        cBtn.style.background = "#805ad5";
+      } else if (clenchCd > 0) {
+        cSub.textContent = `${clenchCd.toFixed(0)}s CD`;
+        cBtn.style.background = "#4a5568";
+      } else {
+        cSub.textContent = "READY!";
+        cBtn.style.background = "var(--blue)";
+      }
+
+      // Live Stage Objective Guide
+      const objEl = document.getElementById("objective-bar");
+      if (player.y > 20 && activeLvl.guards.some(g => g.type === "tsa")) {
+        objEl.textContent = player.items.includes("fast_track_pass")
+          ? "✅ FAST-TRACK READY: Breeze through TSA & head north to the Restroom Wing!"
+          : "STAGE 1/3: Cross Check-In & Pass TSA (Find Fast-Track Pass or suffer 5s Frisk + -4s)!";
+      } else if (barricadeActive) {
+        objEl.textContent = player.items.includes("breath_mints")
+          ? "🍬 MINTS READY: Walk up to the Custodian's Mop Cart at the Restroom Door to bribe!"
+          : "STAGE 2/3: Restroom Wing SEALED by Mop Cart! Grab Breath Mints OR trigger Distraction Prop!";
+      } else {
+        objEl.textContent = "STAGE 3/3: Restroom Wing OPEN! Inspect the Mystery Stalls [?] to find the Open Throne!";
+      }
 
       const badges = [];
-      badges.push(clenchSec > 0 ? "CLENCHING (PAUSED)" : (clenchCd > 0 ? `CLENCH CD: ${clenchCd.toFixed(0)}s` : "DBL-TAP/SPACE: CLENCH"));
-      if (player.flipflops) badges.push("FLIP-FLOPS (NO SLIP)");
-      if (player.patSec > 0) badges.push(`TSA PAT-DOWN: ${player.patSec.toFixed(1)}s`);
-      if (player.stunSec > 0) badges.push(`PERFUME STUN: ${player.stunSec.toFixed(1)}s`);
-      player.items.forEach(i => badges.push(i.toUpperCase().replace(/_/g, " ")));
+      if (slowMoSec > 0) badges.push("🎬 ACTION SLOW-MO");
+      if (player.flipflops) badges.push("🩴 FLIP-FLOPS (NO SLIP)");
+      if (player.patSec > 0) badges.push(`🧤 TSA FRISK: ${player.patSec.toFixed(1)}s`);
+      if (player.stunSec > 0) badges.push(`🌸 PERFUME STUN: ${player.stunSec.toFixed(1)}s`);
+      if (player.boostSec > 0) badges.push(`🌶️ +28% SPEED: ${player.boostSec.toFixed(1)}s`);
+      player.items.forEach(i => badges.push("🎒 " + i.toUpperCase().replace(/_/g, " ")));
       document.getElementById("hud-badges").innerHTML = badges.map(b => `<span class="badge">${b}</span>`).join("");
     }
 
-    // --- Stickman Noir World & Center Thumb Dial Renderer ---
+    // =========================================================================
+    // 8. EXPRESSIVE STICKMAN NOIR WORLD & CALLOUT RENDERER
+    // =========================================================================
     function renderWorld() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const camX = canvas.width * 0.5 - player.x * PPM;
-      const camY = canvas.height * 0.56 - player.y * PPM;
+
+      const shakeX = screenShakeSec > 0 ? (Math.random() - 0.5) * 11 : 0;
+      const shakeY = screenShakeSec > 0 ? (Math.random() - 0.5) * 11 : 0;
+      const camX = canvas.width * 0.5 - player.x * PPM + shakeX;
+      const camY = canvas.height * 0.58 - player.y * PPM + shakeY;
 
       ctx.save();
       ctx.translate(camX, camY);
@@ -1037,7 +1893,7 @@
       // Floor grid
       ctx.fillStyle = "#e2ddd2";
       ctx.fillRect(0, 0, activeLvl.world.w * PPM, activeLvl.world.h * PPM);
-      ctx.strokeStyle = "#d0c9b8";
+      ctx.strokeStyle = "#cfc7b4";
       ctx.lineWidth = 1;
       for (let x = 0; x <= activeLvl.world.w; x += 2) {
         ctx.beginPath(); ctx.moveTo(x * PPM, 0); ctx.lineTo(x * PPM, activeLvl.world.h * PPM); ctx.stroke();
@@ -1046,14 +1902,37 @@
         ctx.beginPath(); ctx.moveTo(0, y * PPM); ctx.lineTo(activeLvl.world.w * PPM, y * PPM); ctx.stroke();
       }
 
-      // Special zones
+      // Restroom Wing Sanctuary Floor Tint
+      ctx.fillStyle = "rgba(47, 133, 90, 0.12)";
+      ctx.fillRect(1 * PPM, 1 * PPM, (activeLvl.world.w - 2) * PPM, 7.0 * PPM);
+
+      // Special zones (Waterfall acoustic rings, Perfume clouds, Walkways, Shuttle gates)
       activeLvl.zones.forEach(z => {
-        if (z.type === "waterfall" || z.type === "perfume") {
-          ctx.fillStyle = z.type === "waterfall" ? "rgba(49,130,206,0.22)" : "rgba(213,63,140,0.28)";
+        if (z.type === "waterfall") {
+          ctx.fillStyle = "rgba(49,130,206,0.20)";
           ctx.beginPath(); ctx.arc(z.x * PPM, z.y * PPM, z.r * PPM, 0, Math.PI * 2); ctx.fill();
+          // Animated acoustic sound rings
+          ctx.strokeStyle = "rgba(49,130,206,0.55)";
+          ctx.lineWidth = 2;
+          for (let r = 1; r <= 3; r++) {
+            const rad = (((worldClock * 2.2 + r * 2.5) % 7.5)) * PPM;
+            ctx.beginPath(); ctx.arc(z.x * PPM, z.y * PPM, rad, 0, Math.PI * 2); ctx.stroke();
+          }
+          ctx.fillStyle = "#2b6cb0";
+          ctx.font = "bold 10px Courier New";
+          ctx.fillText("🌊 1.5x CRAMP WATERFALL", (z.x - 2.4) * PPM, (z.y - z.r + 0.8) * PPM);
+        } else if (z.type === "perfume") {
+          ctx.fillStyle = "rgba(213,63,140,0.28)";
+          ctx.beginPath(); ctx.arc(z.x * PPM, z.y * PPM, z.r * PPM, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#97266d";
+          ctx.font = "bold 9.5px Courier New";
+          ctx.fillText("🌸 PERFUME AMBUSH", (z.x - 1.7) * PPM, z.y * PPM);
         } else {
-          ctx.fillStyle = z.closed ? "#c53030" : "rgba(113,128,150,0.38)";
+          ctx.fillStyle = z.closed ? "#c53030" : "rgba(113,128,150,0.40)";
           ctx.fillRect(z.x * PPM, z.y * PPM, z.w * PPM, z.h * PPM);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 9.5px Courier New";
+          ctx.fillText(z.label, (z.x + 0.2) * PPM, (z.y + 0.8) * PPM);
         }
       });
 
@@ -1064,68 +1943,207 @@
         if (w.label) {
           ctx.fillStyle = "#f3efe6";
           ctx.font = "bold 9px Courier New";
-          ctx.fillText(w.label, (w.x + 0.2) * PPM, (w.y + 0.9) * PPM);
+          ctx.fillText(w.label, (w.x + 0.2) * PPM, (w.y + 0.85) * PPM);
         }
       });
 
-      // Hazards
+      // Cleaning Hazards & Yellow Caution Tape Barricades
       activeLvl.hazards.forEach(h => {
-        if (h.cleared) return;
         ctx.fillStyle = "rgba(66, 153, 225, 0.35)";
         ctx.beginPath(); ctx.arc(h.x * PPM, h.y * PPM, h.r * PPM, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#f6e05e";
+
+        if (h.blocks && !h.cleared) {
+          // Draw physical Yellow/Black Caution Tape across the Restroom Wing Doorway!
+          ctx.fillStyle = "#f6e05e";
+          ctx.fillRect((h.x - 1.65) * PPM, (h.y - 0.35) * PPM, 3.3 * PPM, 16);
+          ctx.strokeStyle = "#141413"; ctx.lineWidth = 2;
+          ctx.strokeRect((h.x - 1.65) * PPM, (h.y - 0.35) * PPM, 3.3 * PPM, 16);
+          ctx.fillStyle = "#141413";
+          ctx.font = "bold 9px Courier New";
+          ctx.fillText("⚠ CLEANING: DO NOT ENTER", (h.x - 1.55) * PPM, (h.y - 0.02) * PPM);
+        }
+
+        // Custodian / Mop Bucket Icon
+        ctx.fillStyle = h.cleared ? "#68d391" : "#f6e05e";
         ctx.beginPath();
-        ctx.moveTo(h.x * PPM, h.y * PPM - 10);
-        ctx.lineTo(h.x * PPM - 9, h.y * PPM + 8);
-        ctx.lineTo(h.x * PPM + 9, h.y * PPM + 8);
+        ctx.moveTo(h.x * PPM, h.y * PPM - 12);
+        ctx.lineTo(h.x * PPM - 11, h.y * PPM + 9);
+        ctx.lineTo(h.x * PPM + 11, h.y * PPM + 9);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle = "#141413"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#141413";
+        ctx.font = "bold 9px Courier New";
+        ctx.fillText(h.cleared ? "LURED AWAY!" : h.label, (h.x - 1.4) * PPM, (h.y + 0.75) * PPM);
       });
 
-      // Props & Stalls
+      // Moving Passenger Crowds
+      (activeLvl.crowds || []).forEach(c => {
+        ctx.fillStyle = "#dd6b20";
+        ctx.beginPath(); ctx.arc(c.x * PPM, c.y * PPM, c.r * PPM, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#141413"; ctx.lineWidth = 2.2; ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 8.5px Courier New";
+        ctx.fillText("🧳 " + c.label, (c.x - 1.1) * PPM, (c.y - c.r - 0.25) * PPM);
+      });
+
+      // Props & Mystery Stalls ("Fog of Porcelain")
       [...activeLvl.props.filter(p => !p.done), ...activeLvl.stalls].forEach(p => {
         const isStall = p.open !== undefined;
-        ctx.fillStyle = isStall ? (p.open ? "#2f855a" : (p.inspected ? "#c53030" : "#6b46c1")) : "#d69e2e";
-        ctx.fillRect(p.x * PPM - 11, p.y * PPM - 11, 22, 22);
-        ctx.strokeStyle = "#141413"; ctx.lineWidth = 2;
-        ctx.strokeRect(p.x * PPM - 11, p.y * PPM - 11, 22, 22);
+        let boxColor = "#d69e2e";
+        let tagText = p.label;
+
+        if (isStall) {
+          if (p.inspected) {
+            boxColor = p.open ? "#2f855a" : "#c53030";
+            tagText = p.open ? "OPEN THRONE!" : "LOCKED DECOY!";
+          } else if (p.revealed) {
+            boxColor = p.open ? "#2f855a" : "#742a2a";
+            tagText = p.open ? "★ OPEN THRONE!" : "LOCKED (INTEL)";
+          } else {
+            // Uninspected Mystery Stall!
+            boxColor = "#553c9a";
+            tagText = "🚽 MYSTERY [?]";
+          }
+        } else if (p.type === "distract") {
+          boxColor = "#e53e3e";
+        } else if (p.type === "clipboard") {
+          boxColor = "#3182ce";
+        }
+
+        ctx.fillStyle = boxColor;
+        ctx.fillRect(p.x * PPM - 13, p.y * PPM - 13, 26, 26);
+        ctx.strokeStyle = "#141413"; ctx.lineWidth = 2.5;
+        ctx.strokeRect(p.x * PPM - 13, p.y * PPM - 13, 26, 26);
+
+        // Radial progress ring when pausing to interact
+        if (p.prog > 0) {
+          ctx.strokeStyle = "#fefcbf";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(p.x * PPM, p.y * PPM, 19, -Math.PI / 2, -Math.PI / 2 + p.prog * Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "#141413";
+        ctx.font = "bold 8.5px Courier New";
+        ctx.fillText(tagText.slice(0, 20), p.x * PPM - 32, p.y * PPM - 16);
       });
 
       // Guards & Vision Cones
       activeLvl.guards.forEach(g => {
         ctx.fillStyle = g.seeing
-          ? (suspicion >= 80 ? "rgba(252,129,129,0.55)" : "rgba(246,173,85,0.5)")
-          : "rgba(255,255,255,0.32)";
+          ? (suspicion >= 70 ? "rgba(229,62,62,0.58)" : "rgba(237,137,54,0.52)")
+          : "rgba(255,255,255,0.34)";
         ctx.beginPath();
         ctx.moveTo(g.x * PPM, g.y * PPM);
-        ctx.arc(g.x * PPM, g.y * PPM, 7.0 * PPM, g.angle - 0.393, g.angle + 0.393);
+        ctx.arc(g.x * PPM, g.y * PPM, 7.2 * PPM, g.angle - 0.42, g.angle + 0.42);
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = g.type === "segway" ? "#2b6cb0" : "#1a202c";
-        ctx.beginPath(); ctx.arc(g.x * PPM, g.y * PPM, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = g.type === "segway" ? "#2b6cb0" : (g.type === "tsa" ? "#742a2a" : "#1a202c");
+        ctx.beginPath(); ctx.arc(g.x * PPM, g.y * PPM, 10, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = "#f3efe6"; ctx.lineWidth = 2; ctx.stroke();
+
+        if (g.seeing) {
+          ctx.fillStyle = "#c53030";
+          ctx.font = "bold 14px Courier New";
+          ctx.fillText(suspicion >= 35 ? "!! CHASING !!" : "!?", g.x * PPM - 14, g.y * PPM - 14);
+        } else if (g.type === "tsa") {
+          ctx.fillStyle = "#742a2a";
+          ctx.font = "bold 9px Courier New";
+          ctx.fillText("TSA FRISK", g.x * PPM - 24, g.y * PPM - 13);
+        }
       });
 
-      // Stickman Protagonist
+      // --- EXPRESSIVE PROTAGONIST STICKMAN IN WORLD ---
       const px = player.x * PPM, py = player.y * PPM;
-      const skew = Math.sin(player.walkPhase) * (dial.tier === "sprint" ? 5 : 2.5);
-      ctx.strokeStyle = player.inCover ? "rgba(20,20,19,0.4)" : "#141413";
-      ctx.lineWidth = 3.5;
-      ctx.fillStyle = "#f3efe6";
-      ctx.beginPath(); ctx.arc(px + skew * 0.4, py - 9, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      const frac = timerSec / activeLvl.baseTimer;
+      const skew = Math.sin(player.walkPhase) * (dial.tier === "sprint" ? 5.5 : 2.8);
+
+      // Urgency gut-cramp aura ring when <35% timer or clenching
+      if (clenchSec > 0) {
+        ctx.strokeStyle = "#63b3ed";
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(px, py, 19 + Math.sin(worldClock * 18) * 3, 0, Math.PI * 2); ctx.stroke();
+      } else if (frac < 0.35 || crampSec <= 3.0) {
+        ctx.strokeStyle = "rgba(197, 48, 48, 0.65)";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(px, py + 2, 15 + Math.sin(worldClock * 22) * 3, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      // Flying comic sweat droplets around head
+      if (frac < 0.75 || dial.tier === "sprint") {
+        ctx.fillStyle = "#63b3ed";
+        for (let s = 0; s < 3; s++) {
+          const sa = worldClock * 7 + s * 2.1;
+          ctx.beginPath();
+          ctx.arc(px + Math.cos(sa) * 14, py - 12 + Math.sin(sa) * 6, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Stickman body & clenched knees
+      ctx.strokeStyle = player.inCover ? "rgba(20,20,19,0.42)" : "#141413";
+      ctx.lineWidth = 3.6;
       ctx.beginPath();
-      ctx.moveTo(px + skew * 0.4, py - 1); ctx.lineTo(px, py + 5);
-      ctx.moveTo(px, py + 5); ctx.lineTo(px - 5 + skew, py + 13);
-      ctx.moveTo(px, py + 5); ctx.lineTo(px + 5 - skew, py + 13);
+      ctx.moveTo(px + skew * 0.4, py - 1); ctx.lineTo(px, py + 6);
+      ctx.moveTo(px, py + 6); ctx.lineTo(px - 5 + skew, py + 14);
+      ctx.moveTo(px, py + 6); ctx.lineTo(px + 5 - skew, py + 14);
       ctx.stroke();
+
+      // Visible Equipped Rubber Flip-Flops on feet!
+      if (player.flipflops) {
+        ctx.fillStyle = "#ecc94b";
+        ctx.fillRect(px - 8 + skew, py + 12, 6, 4);
+        ctx.fillRect(px + 2 - skew, py + 12, 6, 4);
+      }
+
+      // Stickman Expressive Head in World
+      ctx.fillStyle = clenchSec > 0 ? "#d6bcfa" : "#fffdf9";
+      ctx.beginPath(); ctx.arc(px + skew * 0.4, py - 10, 9.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // Mini facial expression on stickman head
+      ctx.fillStyle = "#141413";
+      ctx.beginPath();
+      ctx.arc(px + skew * 0.4 - 3, py - 11, 1.5, 0, Math.PI * 2);
+      ctx.arc(px + skew * 0.4 + 3, py - 11, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      if (activeExpression === "panic_stare") {
+        ctx.arc(px + skew * 0.4, py - 6.5, 2.5, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(px + skew * 0.4 - 3, py - 6.5);
+        ctx.lineTo(px + skew * 0.4 + 3, py - 6.5);
+      }
+      ctx.stroke();
+
+      // --- WORLD-SPACE FLOATING COMIC CALLOUT BUBBLES ---
+      floatingCallouts.forEach(fc => {
+        const fx = fc.x * PPM, fy = fc.y * PPM;
+        ctx.font = "900 10.5px Courier New";
+        const tw = ctx.measureText(fc.text).width + 14;
+        ctx.fillStyle = fc.bg;
+        ctx.fillRect(fx - tw * 0.5, fy - 11, tw, 20);
+        ctx.strokeStyle = "#fffdf9";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(fx - tw * 0.5, fy - 11, tw, 20);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(fc.text, fx - tw * 0.5 + 7, fy + 2.5);
+      });
 
       ctx.restore();
 
+      // Pink Bergamot Mist Screen Overlay when Perfume Stunned
+      if (pinkMistSec > 0) {
+        ctx.fillStyle = `rgba(213, 63, 140, ${Math.min(0.42, pinkMistSec * 0.25)})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
       // Render Center-Anchored Virtual Thumb Dial (HUD space)
       const c = getDialCenter();
-      ctx.fillStyle = "rgba(20, 20, 19, 0.55)";
+      ctx.fillStyle = "rgba(20, 20, 19, 0.58)";
       ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR, 0, Math.PI * 2); ctx.fill();
 
       ctx.strokeStyle = "rgba(243, 239, 230, 0.28)";
@@ -1138,7 +2156,7 @@
       ctx.beginPath(); ctx.arc(c.x, c.y, c.maxR, 0, Math.PI * 2); ctx.stroke();
 
       ctx.fillStyle = ctx.strokeStyle;
-      ctx.beginPath(); ctx.arc(c.x + dial.dx, c.y + dial.dy, 19, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x + dial.dx, c.y + dial.dy, 18, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = "#141413"; ctx.lineWidth = 2.5; ctx.stroke();
     }
 
