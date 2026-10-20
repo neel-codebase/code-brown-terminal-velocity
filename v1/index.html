@@ -406,7 +406,10 @@
           <div class="hud-row">
             <span id="hud-level-label">GOI | BOWEL PRESSURE</span>
             <span id="hud-timer-val" style="font-size:14px;">65.0s</span>
-            <button class="btn-primary" style="padding:2px 6px;font-size:9.5px;margin:0;" onclick="openMenu()">MAP</button>
+            <div style="display:flex;gap:4px;">
+              <a href="../index.html" class="btn-primary" style="padding:2px 6px;font-size:9px;margin:0;text-decoration:none;background:var(--emerald);">🚀 v2.0</a>
+              <button class="btn-primary" style="padding:2px 6px;font-size:9.5px;margin:0;" onclick="openMenu()">MAP</button>
+            </div>
           </div>
           <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
           <div class="hud-row">
@@ -444,11 +447,14 @@
     <!-- BOARDING PASS LEVEL SELECT MODAL (v1.0) -->
     <div class="modal-overlay" id="menu-modal">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:0.8px;">BOARDING PASS • v1.0 DIRECTOR'S CUT</span>
-          <label style="font-size:9.5px;font-weight:800;cursor:pointer;">
-            <input type="checkbox" id="safe-title-toggle" onchange="toggleSafeTitle()" /> Store-Safe Title
-          </label>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+          <span style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:0.8px;">BOARDING PASS • v1.0 ARCHIVE</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <a href="../index.html" class="btn-primary" style="padding:3px 8px;font-size:9.5px;margin:0;text-decoration:none;background:var(--emerald);">🚀 RETURN TO LATEST v2.0</a>
+            <label style="font-size:9.5px;font-weight:800;cursor:pointer;">
+              <input type="checkbox" id="safe-title-toggle" onchange="toggleSafeTitle()" /> Store-Safe
+            </label>
+          </div>
         </div>
         <h2 id="game-title-heading" style="margin:3px 0 3px 0;font-size:17px;">I Need to Take a Sh!t: Airport Dash</h2>
         <div style="font-size:10.5px;font-weight:700;margin-bottom:6px;line-height:1.3;">

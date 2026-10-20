@@ -455,8 +455,71 @@ export const DIALOGUES = {
     tip: "💡 TIP: The Heathrow attendant is fussing with the doors—lure him out first!",
     bubble: "Oi! Stop rattling the brass locks!",
     text: "The Heathrow attendant saw me checking doors and reshuffled the 'Out of Order' cones!"
+  },
+  spawn_tutorial: {
+    speaker: "30s EXPRESS TUTORIAL",
+    expr: "sweating_squint",
+    tip: "💡 STEP 1/5: Move North along the glowing arrows! (WASD/Arrows on PC • Stick on Phone)",
+    bubble: "Airport burritos were a mistake! Need a toilet—fast!",
+    text: "Airport burritos were a tactical mistake. Let's learn the 3 survival rules in 30 seconds before boarding!"
   }
 };
+
+/**
+ * 6-Step Interactive Tutorial Flow (Directly implementing the attached Game Tutorial Guide:
+ * 1. Keep It Short, 2. Make It Interactive, 3. Show Don't Tell, 4. Offer Quick Feedback,
+ * 5. Integrate Into Real Gameplay, + Progressive Single-Mechanic Unlocking & Skip Option)
+ */
+export const TUTORIAL_STEPS_V2 = [
+  {
+    step: 1,
+    title: "STEP 1/5: CORE MOVEMENT",
+    promptMobile: "Drag the (L) Stick North to the glowing marker! (Grab 🩴 Flip-Flops on the left for wet floors)",
+    promptDesktop: "Press [W] or [↑ Arrow] to walk North! (Hold [Shift] to Sprint • Walk over 🩴 Flip-Flops)",
+    unlockedBtns: [] // Introduce 1 mechanic at a time!
+  },
+  {
+    step: 2,
+    title: "STEP 2/5: FIRST CHALLENGE — STEALTH",
+    promptMobile: "Sprinting alerts guards! Walk gently past the Guard—or tap [X] POKER FACE!",
+    promptDesktop: "Sprinting alerts guards! Walk past the Guard—or press [Q] for POKER FACE!",
+    unlockedBtns: ["x"]
+  },
+  {
+    step: 3,
+    title: "STEP 3/5: GUT CRAMP DEFENSE",
+    promptMobile: "Stomach rumble! Tap [B] IRON CLENCH (or double-tap stick) to block the cramp!",
+    promptDesktop: "Stomach rumble! Press [SPACE] for IRON CLENCH to freeze the clock & block cramps!",
+    unlockedBtns: ["x", "b"]
+  },
+  {
+    step: 4,
+    title: "STEP 4/5: UNSEAL THE RESTROOM",
+    promptMobile: "Janitor blocking the door! Walk up to the 🗑️ Trash Bin or 🍬 Mints & tap [A] ACTION!",
+    promptDesktop: "Janitor blocking the door! Walk up to the 🗑️ Trash Bin or 🍬 Mints & press [E]!",
+    unlockedBtns: ["x", "b", "a"]
+  },
+  {
+    step: 5,
+    title: "STEP 5/5: CLAIM THE OPEN THRONE!",
+    promptMobile: "Doorway clear! Walk up to the [🚽 ?] Mystery Stalls & tap [A] to find the unlocked toilet!",
+    promptDesktop: "Doorway clear! Walk up to the [🚽 ?] Mystery Stalls & press [E] to win!",
+    unlockedBtns: ["x", "b", "a", "y"]
+  }
+];
+
+/**
+ * Tactical Pause & Tooltip Guide (For Pause Overlay & Click-to-Inspect)
+ */
+export const TACTICAL_TOOLTIPS_V2 = [
+  { icon: "🩴", name: "Rubber Flip-Flops", desc: "100% immunity to slipping on wet cyan puddles." },
+  { icon: "🎫", name: "VIP Fast-Track Pass", desc: "Skips the 5-second TSA checkpoint frisk & -4s gut squeeze." },
+  { icon: "🍬 / 🗑️", name: "Mints or Trash Bin", desc: "Bribes or lures the janitor away so the Restroom Wing opens." },
+  { icon: "📋", name: "Janitor's Clipboard", desc: "Highlights the unlocked toilet in bright green from afar." },
+  { icon: "[B] / Space", name: "Iron Clench", desc: "Freezes your countdown for 1.6s & blocks incoming Cramp Waves." },
+  { icon: "[X] / Q", name: "Poker Face", desc: "Whistle casually for 3.5s — cuts guard suspicion build by 50%." },
+  { icon: "[Y] / F", name: "Elbow Dash", desc: "Burst through crowds without losing -2s & shake off dizziness." }
+];
 
 export const HANEDA_KEYS = [
   { k: "音姫", r: "OTOHIME", e: " Sound", win: false },
@@ -472,3 +535,4 @@ export const HANEDA_KEYS = [
   { k: "流す", r: "NAGASU", e: "Flush", win: false },
   { k: "開 / OPEN", r: "HIRAKU", e: "UNLOCK LID!", win: true }
 ];
+

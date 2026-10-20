@@ -3,48 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Code Brown: Terminal Velocity (v2.0) — Playable Stealth-Action Comedy</title>
+  <title>Code Brown: Terminal Velocity (v2.1) — Playable Stealth-Action Comedy</title>
   <link rel="stylesheet" href="./css/styles_v2.css" />
 </head>
 <body>
   <div id="phone-frame" class="landscape-mode">
     <canvas id="game-canvas"></canvas>
 
-    <!-- TOP HUD PANEL WITH LIVE JOHNNY ROCKETFINGERS FACECAM & ORIENTATION TOGGLE -->
+    <!-- ULTRA-COMPACT 48PX TOP HUD PANEL (MAXIMIZES PHONE MAP VISIBILITY) -->
     <div class="hud-top" id="hud-panel" style="display:none;">
       <div class="hud-main-grid">
         <div class="facecam-box" onclick="window.cycleTestExpression()" title="Tap to test facial expressions">
-          <canvas id="facecam-canvas" width="60" height="56"></canvas>
-          <div id="facecam-label">COOL &amp; COLLECTED</div>
+          <canvas id="facecam-canvas" width="42" height="40"></canvas>
+          <div id="facecam-label">COOL</div>
         </div>
         <div class="hud-bars-col">
           <div class="hud-row">
-            <span id="hud-level-label">GOI | BOWEL CLOCK</span>
-            <span id="hud-timer-val" style="font-size:14px;">68.0s</span>
+            <span id="hud-level-label">GOI | CLOCK</span>
+            <span id="hud-timer-val" style="font-size:12px;color:var(--amber);">68.0s</span>
             <div class="hud-btn-group">
-              <button class="btn-primary" id="hud-orient-btn" style="padding:2px 6px;font-size:9px;margin:0;" onclick="window.toggleOrientationMode()">⇄ VIEW</button>
-              <button class="btn-primary" style="padding:2px 6px;font-size:9px;margin:0;" onclick="window.openMenu()">MAP</button>
+              <button class="btn-primary" id="hud-skip-tut-btn" style="padding:2px 5px;font-size:8.5px;margin:0;display:none;background:var(--emerald);color:#fff;" onclick="window.skipTutorialToCampaign()" title="Skip Tutorial & Start Terminal 01">⏭ SKIP</button>
+              <button class="btn-primary" id="hud-zoom-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleCameraZoom()" title="Toggle Wide-Angle Camera Zoom">🔍 ZOOM</button>
+              <button class="btn-primary" id="hud-sfx-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleAudioMute()" title="Toggle Procedural Sound Effects">🔊 SFX</button>
+              <button class="btn-primary" id="hud-pause-btn" style="padding:2px 6px;font-size:8.5px;margin:0;background:var(--amber);" onclick="window.togglePauseModal()" title="Pause & Tactical Field Guide ([P] or [Esc])">⏸ PAUSE / ?</button>
+              <button class="btn-primary" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.openMenu()">MAP</button>
             </div>
           </div>
           <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
           <div class="hud-row">
-            <span>SECURITY SUSPICION</span>
+            <span>SECURITY ALERT</span>
             <span id="hud-susp-val">0%</span>
           </div>
           <div class="bar-track"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
         </div>
       </div>
       <div class="badge-strip" id="hud-badges"></div>
-      <div id="objective-bar">💡 Tip: Get past the Security Checkpoint! (Grab a Fast-Track Pass to skip the pat-down)</div>
+      <div id="objective-bar">💡 Tip: Get past the Security Checkpoint!</div>
     </div>
 
     <!-- PRE-CRAMP 3s WARNING BAR -->
-    <div id="cramp-warning-bar">⚠ GUT RUMBLE IN 2.5s — SLOW TO A WALK OR HIT [B] CLENCH!</div>
+    <div id="cramp-warning-bar">⚠ GUT RUMBLE IN 2.5s — SLOW TO A WALK OR HIT [B] / [SPACE] CLENCH!</div>
 
-    <!-- JOHNNY ROCKETFINGERS COMIC STRIP ACTION CUT-IN BANNER (HUMAN-FIRST COPY) -->
+    <!-- SLIM NON-BLOCKING TOAST TICKER (NEVER BLOCKS MAP OR GAMEPLAY) -->
     <div id="comic-banner" onclick="window.dismissBanner()">
       <div class="comic-inner">
-        <canvas id="cutin-face-canvas" width="68" height="68"></canvas>
+        <canvas id="cutin-face-canvas" width="38" height="38"></canvas>
         <div style="flex:1;min-width:0;">
           <div class="comic-header-row">
             <span id="comic-Speaker">INNER MONOLOGUE</span>
@@ -57,9 +60,9 @@
     </div>
 
     <!-- CONTEXTUAL INTERACTION PROMPT -->
-    <div id="interact-pill">TAP [A] OR RELEASE STICK: INTERACT</div>
+    <div id="interact-pill">TAP [A] / [E]: INTERACT</div>
 
-    <!-- DUAL-ORIENTATION GAMEPAD LAYER: (L) VIRTUAL STICK + (R) 4-BUTTON ARCADE DIAMOND -->
+    <!-- MOBILE TOUCH GAMEPAD LAYER (AUTO-HIDDEN ON DESKTOP COMPUTERS) -->
     <div id="gamepad-layer">
       <div id="left-stick-zone"></div>
       <div id="right-diamond-cluster">
@@ -86,64 +89,155 @@
       </div>
     </div>
 
-    <!-- BOARDING PASS LEVEL SELECT MODAL (v2.0 HUMAN-FIRST COPY) -->
+    <!-- DESKTOP KEYBOARD & MOUSE KEYBIND BAR (SHOWN AUTOMATICALLY ON COMPUTERS) -->
+    <div id="desktop-keybind-bar">
+      <span><span class="key-pill">WASD / Arrows</span>Walk</span>
+      <span><span class="key-pill">Shift</span>Sprint</span>
+      <span><span class="key-pill">E / Enter</span>Action</span>
+      <span><span class="key-pill">Space</span>Iron Clench</span>
+      <span><span class="key-pill">Q</span>Poker Face</span>
+      <span><span class="key-pill">F</span>Elbow Dash</span>
+      <span><span class="key-pill">P / Esc</span>Pause &amp; Guide</span>
+    </div>
+
+    <!-- PAUSE & TACTICAL FIELD GUIDE / TOOLTIPS MODAL -->
+    <div class="modal-overlay" id="pause-modal" style="display:none;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <span style="color:var(--crimson);font-weight:900;font-size:11px;letter-spacing:0.8px;">
+            ⏸ TACTICAL TIMEOUT • AIRPORT SURVIVAL FIELD GUIDE
+          </span>
+          <span id="pause-device-badge" style="font-size:9.5px;font-weight:900;background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:4px;">
+            DEVICE: AUTO-DETECTED
+          </span>
+        </div>
+        <h2 style="margin:4px 0 2px 0;font-size:15px;">How Not to Embarrass Yourself at the Gate</h2>
+        <div id="pause-current-tip" style="font-size:10.5px;font-weight:800;color:var(--emerald);margin-bottom:6px;">
+          💡 Current Objective: Slip past security, grab any gear on contact, and check the North stalls!
+        </div>
+
+        <!-- Visual Tooltip Cards (Populated from TACTICAL_TOOLTIPS_V2) -->
+        <div class="tooltip-grid" id="tooltip-grid"></div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;margin-top:10px;border-top:2px dashed var(--ink);padding-top:8px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn-primary" style="background:var(--emerald);color:#fff;" onclick="window.togglePauseModal()">▶ RESUME MISSION</button>
+            <button class="btn-primary" onclick="window.startTutorialLevel()">🎓 REPLAY 30s TUTORIAL</button>
+            <button class="btn-primary" onclick="window.toggleDesktopTouchOverride()">⌨️/📱 SWITCH UI MODE</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn-primary" onclick="window.openMenu()">🗺️ BOARDING PASS</button>
+            <a class="v1-archive-link" href="./v1/index.html">🕹️ Classic v1.0</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLEAN, DECLUTTERED BOARDING PASS HOME SCREEN (v2.1) -->
     <div class="modal-overlay" id="menu-modal">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
           <span id="menu-top-tag" style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:0.8px;">
-            BOARDING PASS • PRIORITY LAVATORY ACCESS
+            BOARDING PASS • PRIORITY LAVATORY ACCESS (v2.1)
           </span>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <button class="btn-primary" id="menu-orient-btn" style="padding:3px 8px;font-size:9.5px;margin:0;" onclick="window.toggleOrientationMode()">
-              ⇄ MODE: LANDSCAPE GAMEPAD
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span id="menu-tenant-pill" style="font-size:9px;font-weight:900;background:var(--ink);color:var(--amber);padding:2px 6px;border-radius:4px;">
+              TENANT: INDIE WEB
+            </span>
+            <button class="btn-primary" id="menu-sfx-btn" style="padding:2px 7px;font-size:9px;margin:0;" onclick="window.toggleAudioMute()">
+              🔊 SFX: ON
             </button>
-            <label style="font-size:9.5px;font-weight:800;cursor:pointer;">
-              <input type="checkbox" id="safe-title-toggle" onchange="window.toggleSafeTitle()" /> Store-Safe Title
-            </label>
+            <button class="btn-primary" style="padding:2px 7px;font-size:9px;margin:0;" onclick="window.openPauseModalFromMenu()">
+              ❓ FIELD GUIDE
+            </button>
           </div>
         </div>
 
-        <h2 id="game-title-heading" style="margin:4px 0 3px 0;font-size:17px;">I Need to Take a Sh!t: Airport Dash</h2>
-        <div id="menu-subtitle" style="font-size:11px;font-weight:700;margin-bottom:7px;line-height:1.32;">
+        <h2 id="game-title-heading" style="margin:4px 0 2px 0;font-size:17px;">I Need to Take a Sh!t: Airport Dash</h2>
+        <div id="menu-subtitle" style="font-size:10.5px;font-weight:700;margin-bottom:6px;line-height:1.3;">
           Bad airport food. Five international terminals. Zero unlocked stalls in sight. Keep a poker face past security and reach a working throne before gravity wins.
         </div>
 
-        <!-- Mirror Check Expression Preview Strip (In-Universe Player Copy) -->
-        <div class="expr-preview-bar">
-          <canvas id="menu-expr-canvas" width="56" height="56"></canvas>
-          <div style="flex:1;">
-            <div style="font-size:10.5px;font-weight:900;color:var(--crimson);" id="menu-expr-title">
-              MIRROR CHECK: COOL &amp; COLLECTED
+        <!-- HERO TUTORIAL & PLAYABLE AD CTA (GAME TUTORIAL GUIDE COMPLIANT) -->
+        <button class="tutorial-hero-btn" onclick="window.startTutorialLevel()">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>🎓 PLAY 30s INTERACTIVE TUTORIAL — GATE 00: EXPRESS LAYOVER</span>
+            <span style="background:var(--amber);color:var(--ink);padding:2px 6px;border-radius:4px;font-size:9.5px;" id="tutorial-badge-status">START HERE!</span>
+          </div>
+          <div style="font-size:9.5px;font-weight:700;color:#d9fbe5;margin-top:2px;">
+            Step-by-step progressive controls • Non-punishing safety net • Unlocks +4s Clock &amp; Free Flip-Flops on Terminal 01!
+          </div>
+        </button>
+
+        <!-- 5 CAMPAIGN TERMINALS -->
+        <div class="level-grid" id="level-list"></div>
+
+        <!-- COLLAPSIBLE DRAWER FOR DIFFICULTY, MIRROR CHECK & TENANT/USER CLASSIFICATION -->
+        <button class="btn-primary" id="drawer-toggle-btn" style="width:100%;margin-top:6px;font-size:9.5px;background:#efe6d5;" onclick="window.toggleOptionsDrawer()">
+          ⚙️ TACTICAL OPTIONS: MEAL SPICE DIFFICULTY, MIRROR CHECK &amp; TENANT / USER CLASSIFIER ▾
+        </button>
+
+        <div id="options-drawer">
+          <!-- In-Universe Difficulty Selector -->
+          <div style="font-size:9.5px;font-weight:900;letter-spacing:0.4px;margin-bottom:3px;">1. HOW RISKY WAS YOUR IN-FLIGHT MEAL? (DIFFICULTY)</div>
+          <div class="diff-strip">
+            <button class="diff-btn" id="diff-casual" onclick="window.setDifficulty('casual')">
+              MILD TRAVEL TUMMY<br/><span style="font-weight:600;font-size:8.5px;">Relaxed Clock (+25%)</span>
+            </button>
+            <button class="diff-btn active" id="diff-standard" onclick="window.setDifficulty('standard')">
+              AIRPORT CURRY CRISIS<br/><span style="font-weight:600;font-size:8.5px;">Standard Rush</span>
+            </button>
+            <button class="diff-btn" id="diff-nightmare" onclick="window.setDifficulty('nightmare')">
+              STREET VENDOR REVENGE<br/><span style="font-weight:600;font-size:8.5px;">Panic Speed (-20%)</span>
+            </button>
+          </div>
+
+          <!-- Mirror Check Expression Preview Strip -->
+          <div class="expr-preview-bar" style="margin-top:6px;">
+            <canvas id="menu-expr-canvas" width="50" height="50"></canvas>
+            <div style="flex:1;">
+              <div style="font-size:10px;font-weight:900;color:var(--crimson);" id="menu-expr-title">
+                MIRROR CHECK: COOL &amp; COLLECTED
+              </div>
+              <div style="font-size:9px;font-weight:700;line-height:1.22;" id="menu-expr-desc">
+                "Act natural. Nobody suspects a guy chewing a toothpick." (Guards notice you 25% slower — 50% slower with [X] Poker Face!)
+              </div>
             </div>
-            <div style="font-size:9.5px;font-weight:700;line-height:1.25;" id="menu-expr-desc">
-              "Act natural. Nobody suspects a guy chewing a toothpick." (Guards notice you 25% slower — 50% slower with [X] Poker Face!)
+            <button class="btn-primary" style="padding:4px 7px;font-size:9px;margin:0;" onclick="window.cycleMenuExpression()">
+              PRACTICE FACE 🎭
+            </button>
+          </div>
+
+          <!-- Multi-Tenant Distribution & Live User Classification -->
+          <div style="margin-top:6px;padding:6px 8px;background:#fffdf8;border:2px solid var(--ink);border-radius:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+              <span style="font-size:9.5px;font-weight:900;color:var(--crimson);">2. TENANT &amp; LIVE USER CLASSIFICATION</span>
+              <span id="classifier-live-readout" style="font-size:8.5px;font-weight:800;color:var(--emerald);">
+                Archetype: First-Time Traveler | Skill: Standard
+              </span>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;">
+              <button class="btn-primary" style="padding:3px 6px;font-size:8.5px;margin:0;" onclick="window.selectTenantProfile('indie_web')">🌐 Indie Web</button>
+              <button class="btn-primary" style="padding:3px 6px;font-size:8.5px;margin:0;" onclick="window.selectTenantProfile('playable_ad')">📲 In-App Playable Ad</button>
+              <button class="btn-primary" style="padding:3px 6px;font-size:8.5px;margin:0;" onclick="window.selectTenantProfile('app_store_safe')">🛡️ App Store Safe (12+)</button>
+              <button class="btn-primary" style="padding:3px 6px;font-size:8.5px;margin:0;" onclick="window.selectTenantProfile('copilots_playtest')">🧪 Copilots QA</button>
+              <button class="btn-primary" style="padding:3px 6px;font-size:8.5px;margin:0;background:var(--ink);color:var(--amber);" onclick="window.exportTelemetryReport()">📊 Export Telemetry JSON</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-size:9px;font-weight:700;">
+              <button class="btn-primary" id="menu-orient-btn" style="padding:2px 6px;font-size:8.5px;margin:0;" onclick="window.toggleOrientationMode()">
+                ⇄ MODE: LANDSCAPE GAMEPAD
+              </button>
+              <label style="cursor:pointer;">
+                <input type="checkbox" id="safe-title-toggle" onchange="window.toggleSafeTitle()" /> Store-Safe Title
+              </label>
             </div>
           </div>
-          <button class="btn-primary" style="padding:5px 8px;font-size:9.5px;margin:0;" onclick="window.cycleMenuExpression()">
-            PRACTICE POKER FACE 🎭
-          </button>
         </div>
-
-        <!-- In-Universe Difficulty Selector -->
-        <div style="font-size:9.5px;font-weight:900;letter-spacing:0.4px;">HOW RISKY WAS YOUR IN-FLIGHT MEAL?</div>
-        <div class="diff-strip">
-          <button class="diff-btn" id="diff-casual" onclick="window.setDifficulty('casual')">
-            MILD TRAVEL TUMMY<br/><span style="font-weight:600;font-size:8.5px;">Relaxed Clock</span>
-          </button>
-          <button class="diff-btn active" id="diff-standard" onclick="window.setDifficulty('standard')">
-            AIRPORT CURRY CRISIS<br/><span style="font-weight:600;font-size:8.5px;">Standard Rush</span>
-          </button>
-          <button class="diff-btn" id="diff-nightmare" onclick="window.setDifficulty('nightmare')">
-            STREET VENDOR REVENGE<br/><span style="font-weight:600;font-size:8.5px;">Panic Speed</span>
-          </button>
-        </div>
-
-        <div class="level-grid" id="level-list"></div>
 
         <!-- Classic v1.0 Archive Link & Controls Summary -->
         <div class="archive-bar">
-          <span>🎮 Controls: <b>(L) Stick / WASD</b> Move • <b>[A]/E</b> Action • <b>[B]/Space</b> Clench • <b>[X]/Q</b> Poker Face • <b>[Y]/F</b> Elbow Dash</span>
-          <a class="v1-archive-link" href="./v1/index.html">🕹️ Play Classic v1.0 (Portrait Archive)</a>
+          <span id="menu-controls-hint">🎮 Auto-Detects <b>Desktop WASD / Arrows</b> or <b>Mobile Touch Stick</b> • Press <b>[P]</b> for Field Guide</span>
+          <a class="v1-archive-link" href="./v1/index.html">🕹️ Play Classic v1.0 (With Return to v2.1)</a>
         </div>
       </div>
     </div>
@@ -161,29 +255,39 @@
       </div>
     </div>
 
-    <!-- END OF RUN SLAPSTICK MODAL WITH EXPRESSION PORTRAIT -->
+    <!-- END OF RUN SLAPSTICK MODAL WITH EXPRESSION PORTRAIT & PLAYABLE AD CTA -->
     <div class="modal-overlay" id="outcome-modal" style="display:none;">
       <div class="card" style="text-align:center;max-width:460px;">
-        <canvas id="outcome-face-canvas" width="76" height="76" style="background:#fffdf8;border:3px solid var(--ink);border-radius:10px;margin:0 auto 6px auto;display:block;"></canvas>
-        <h2 id="outcome-title" style="margin:4px 0;">THRONE SECURED!</h2>
-        <div id="outcome-sub" style="font-weight:800;font-size:12px;margin-bottom:8px;"></div>
-        <p id="outcome-bark" style="font-style:italic;font-weight:700;font-size:13px;margin:8px 0;"></p>
-        <div id="outcome-stats" style="font-weight:900;font-size:12.5px;margin:8px 0;"></div>
-        <div>
-          <button class="btn-primary" onclick="window.retryCurrentLevel()">RETRY TERMINAL</button>
-          <button class="btn-primary" onclick="window.nextOrMenu()">NEXT / TERMINAL MAP</button>
+        <canvas id="outcome-face-canvas" width="70" height="70" style="background:#fffdf8;border:3px solid var(--ink);border-radius:10px;margin:0 auto 5px auto;display:block;"></canvas>
+        <h2 id="outcome-title" style="margin:3px 0;font-size:16px;">THRONE SECURED!</h2>
+        <div id="outcome-sub" style="font-weight:800;font-size:11.5px;margin-bottom:6px;"></div>
+        <p id="outcome-bark" style="font-style:italic;font-weight:700;font-size:12px;margin:6px 0;"></p>
+        <div id="outcome-stats" style="font-weight:900;font-size:11.5px;margin:6px 0;"></div>
+        <div id="outcome-archetype-tag" style="font-size:10px;font-weight:800;color:var(--emerald);margin-bottom:8px;"></div>
+        <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="window.retryCurrentLevel()">🔄 RETRY</button>
+          <button class="btn-primary" id="outcome-next-btn" style="background:var(--emerald);color:#fff;" onclick="window.nextOrMenu()">🚀 NEXT TERMINAL</button>
+          <button class="btn-primary" onclick="window.openMenu()">🗺️ BOARDING PASS</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODULAR ES6 ENTRY POINT -->
+  <!-- MODULAR ES6 ENTRY POINT (v2.1) -->
   <script type="module">
-    import { UI_COPY_V2, EXPRESSION_META, EXPRESSION_DYNAMICS, HANEDA_KEYS } from "./src/config_copy_v2.js";
+    import {
+      UI_COPY_V2,
+      EXPRESSION_META,
+      HANEDA_KEYS,
+      TUTORIAL_STEPS_V2,
+      TACTICAL_TOOLTIPS_V2
+    } from "./src/config_copy_v2.js";
     import { LEVELS_V2 } from "./src/maps_v2.js";
     import { createInputController } from "./src/input_controller_v2.js";
     import { createSimulationEngine } from "./src/sim_engine_v2.js";
     import { drawJohnnyExpression, renderWorldV2 } from "./src/noir_renderer_v2.js";
+    import { createAudioHapticsEngine } from "./src/audio_haptics_v2.js";
+    import { createTenantClassifier } from "./src/tenant_classifier_v2.js";
 
     const phoneFrame = document.getElementById("phone-frame");
     const canvas = document.getElementById("game-canvas");
@@ -198,53 +302,119 @@
     const outcomeCanvas = document.getElementById("outcome-face-canvas");
     const outcomeCtx = outcomeCanvas.getContext("2d");
 
-    // Create deterministic simulation engine
-    const engine = createSimulationEngine({
-      onShowBanner(dialogue) {
-        const meta = EXPRESSION_META.find((e) => e.id === dialogue.expr) || EXPRESSION_META[0];
-        document.getElementById("comic-Speaker").textContent = dialogue.speaker;
-        // Section 3.1: No "EXPR:" prefix or "EFFECT:" debug prefix!
-        document.getElementById("comic-expr-pill").textContent = meta.label;
-        document.getElementById("comic-text").textContent = `"${dialogue.text}"`;
-        document.getElementById("comic-effect-tag").textContent = dialogue.tip;
-        document.getElementById("comic-banner").style.display = "block";
-        drawJohnnyExpression(cutinCtx, cutinCanvas.width, cutinCanvas.height, dialogue.expr, engine.sim.worldClock);
+    // 1. Initialize Mobile-Safe WebAudio & Haptics Engine + Multi-Tenant User Classifier
+    const audio = createAudioHapticsEngine();
+    const tenantClassifier = createTenantClassifier();
+
+    // 2. Create Deterministic Simulation Engine
+    const engine = createSimulationEngine(
+      {
+        onShowBanner(dialogue) {
+          const meta = EXPRESSION_META.find((e) => e.id === dialogue.expr) || EXPRESSION_META[0];
+          document.getElementById("comic-Speaker").textContent = dialogue.speaker;
+          document.getElementById("comic-expr-pill").textContent = meta.label;
+          document.getElementById("comic-text").textContent = `"${dialogue.text}"`;
+          document.getElementById("comic-effect-tag").textContent = dialogue.tip;
+          document.getElementById("comic-banner").style.display = "block";
+          drawJohnnyExpression(cutinCtx, cutinCanvas.width, cutinCanvas.height, dialogue.expr, engine.sim.worldClock);
+        },
+        onHideBanner() {
+          document.getElementById("comic-banner").style.display = "none";
+        },
+        onOpenBidetModal() {
+          openBidetBossModal();
+        },
+        onFinishRun(won, reason) {
+          showOutcomeModal(won, reason);
+        },
+        onPauseChanged(paused) {
+          const pauseModal = document.getElementById("pause-modal");
+          pauseModal.style.display = paused ? "flex" : "none";
+          if (paused) {
+            populatePauseModal();
+          }
+        },
+        onStateChanged() {
+          syncHudUI();
+        }
       },
-      onHideBanner() {
-        document.getElementById("comic-banner").style.display = "none";
-      },
-      onOpenBidetModal() {
-        openBidetBossModal();
-      },
-      onFinishRun(won, reason) {
-        showOutcomeModal(won, reason);
-      },
-      onStateChanged() {
-        syncHudUI();
-      }
-    });
+      audio,
+      tenantClassifier
+    );
 
     const { sim } = engine;
 
-    // Create unified input controller (Portrait Dial + Landscape Stick & 4-Buttons + Keyboard/Gamepad)
+    // Apply initial tenant profile defaults (e.g., store-safe title or playable_ad auto-boot)
+    const activeTenant = tenantClassifier.getActiveTenant();
+    if (activeTenant.defaultSafeTitle) {
+      sim.safeTitle = true;
+    }
+
+    // 3. Create Unified Input Controller (Auto-Detects Desktop WASD/Arrows vs Mobile Touch)
+    let manualTouchOverride = null; // null = auto, true = force touch UI, false = force desktop UI
+
+    function syncControlModeVisibility(mode, hideTouch) {
+      const useDesktopBar = manualTouchOverride !== null ? !manualTouchOverride : Boolean(hideTouch);
+      const gpLayer = document.getElementById("gamepad-layer");
+      const deskBar = document.getElementById("desktop-keybind-bar");
+      if (sim.state === "playing") {
+        gpLayer.style.display = useDesktopBar ? "none" : "block";
+        deskBar.style.display = useDesktopBar ? "flex" : "none";
+      } else {
+        gpLayer.style.display = "none";
+        deskBar.style.display = "none";
+      }
+    }
+
     const input = createInputController(
       canvas,
       () => sim,
       {
-        onActionA: () => engine.triggerInstantAction(),
-        onClenchB: () => engine.triggerClench(),
-        onPokerX: () => engine.triggerPokerFace(),
-        onDashY: () => engine.triggerElbowDash(input.dial)
+        onActionA: () => {
+          audio.unlock();
+          tenantClassifier.recordAbilityUse("action");
+          engine.triggerInstantAction();
+        },
+        onClenchB: () => {
+          audio.unlock();
+          tenantClassifier.recordAbilityUse("clench");
+          engine.triggerClench();
+        },
+        onPokerX: () => {
+          audio.unlock();
+          tenantClassifier.recordAbilityUse("poker");
+          engine.triggerPokerFace();
+        },
+        onDashY: () => {
+          audio.unlock();
+          tenantClassifier.recordAbilityUse("dash");
+          engine.triggerElbowDash(input.dial);
+        },
+        onTogglePause: () => {
+          audio.unlock();
+          if (sim.state === "playing" || sim.state === "paused") {
+            engine.togglePause();
+          }
+        },
+        onInputModeChange: (mode, hideTouch) => {
+          tenantClassifier.recordInputMode(mode);
+          syncControlModeVisibility(mode, hideTouch);
+        },
+        onCanvasWorldClick: (screenX, screenY) => {
+          audio.unlock();
+          inspectCanvasObjectAt(screenX, screenY);
+        }
       }
     );
 
-    // Wire 4-Button Arcade Diamond with multi-touch isolation (stopPropagation on pointerdown)
+    // Wire 4-Button Arcade Diamond with multi-touch isolation
     function bindArcadeButton(btnId, handler) {
       const el = document.getElementById(btnId);
       if (!el) return;
       el.addEventListener("pointerdown", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        audio.unlock();
         handler();
       });
     }
@@ -253,6 +423,27 @@
     bindArcadeButton("btn-arcade-b", () => engine.triggerClench());
     bindArcadeButton("btn-arcade-x", () => engine.triggerPokerFace());
     bindArcadeButton("btn-arcade-y", () => engine.triggerElbowDash(input.dial));
+
+    // Allow clicking/tapping anywhere on the canvas to inspect nearby items/stalls/guards or tap the Mini-Map
+    function inspectCanvasObjectAt(screenX, screenY) {
+      if (sim.state !== "playing" || !sim.activeLvl) return;
+      // Check if user tapped the top-right Mini-Map radar to cycle zoom
+      if (screenX >= canvas.width - 104 && screenY >= 50 && screenY <= 175) {
+        window.toggleCameraZoom();
+        return;
+      }
+      // Show a quick non-blocking tactical tooltip bubble for the nearest object
+      if (sim.nearestInteractable) {
+        engine.spawnSpeechBubble(
+          sim.player.x,
+          sim.player.y,
+          `💡 ${sim.nearestInteractable.label} — Press [A] / [E]!`,
+          "player",
+          2.0
+        );
+        audio.playTutorialDing();
+      }
+    }
 
     function applyOrientationClasses() {
       if (sim.orientationMode === "landscape") {
@@ -269,10 +460,6 @@
             ? "⇄ MODE: LANDSCAPE GAMEPAD"
             : "⇄ MODE: PORTRAIT ONE-THUMB";
       }
-      const hudOrientBtn = document.getElementById("hud-orient-btn");
-      if (hudOrientBtn) {
-        hudOrientBtn.textContent = sim.orientationMode === "landscape" ? "⇄ PORTRAIT" : "⇄ LANDSCAPE";
-      }
       resizeCanvas();
     }
 
@@ -284,8 +471,86 @@
 
     window.addEventListener("resize", resizeCanvas);
 
-    // --- MENU & UI HELPERS EXPOSED FOR INLINE HANDLERS ---
+    // --- EXPOSED WINDOW ACTIONS FOR UI CONTROLS ---
+    window.toggleCameraZoom = function () {
+      audio.unlock();
+      sim.zoomPreset = sim.zoomPreset === "wide" ? "close" : "wide";
+      engine.saveProgress();
+      const zoomBtn = document.getElementById("hud-zoom-btn");
+      if (zoomBtn) {
+        zoomBtn.textContent = sim.zoomPreset === "wide" ? "🔍 WIDE" : "🔍 CLOSE";
+      }
+      audio.playTutorialDing();
+    };
+
+    window.toggleAudioMute = function () {
+      audio.unlock();
+      const muted = audio.toggleMute();
+      const hudBtn = document.getElementById("hud-sfx-btn");
+      const menuBtn = document.getElementById("menu-sfx-btn");
+      if (hudBtn) hudBtn.textContent = muted ? "🔇 MUTE" : "🔊 SFX";
+      if (menuBtn) menuBtn.textContent = muted ? "🔇 SFX: OFF" : "🔊 SFX: ON";
+      if (!muted) audio.playTutorialDing();
+    };
+
+    window.togglePauseModal = function () {
+      audio.unlock();
+      if (sim.state === "playing" || sim.state === "paused") {
+        engine.togglePause();
+      } else {
+        const pm = document.getElementById("pause-modal");
+        pm.style.display = pm.style.display === "flex" ? "none" : "flex";
+        if (pm.style.display === "flex") populatePauseModal();
+      }
+    };
+
+    window.openPauseModalFromMenu = function () {
+      audio.unlock();
+      populatePauseModal();
+      document.getElementById("pause-modal").style.display = "flex";
+    };
+
+    window.toggleDesktopTouchOverride = function () {
+      audio.unlock();
+      if (manualTouchOverride === null) {
+        manualTouchOverride = Boolean(input.dial.hideTouchOverlay);
+      } else {
+        manualTouchOverride = !manualTouchOverride;
+      }
+      input.dial.hideTouchOverlay = !manualTouchOverride;
+      syncControlModeVisibility(input.dial.inputSource, input.dial.hideTouchOverlay);
+      populatePauseModal();
+    };
+
+    window.toggleOptionsDrawer = function () {
+      audio.unlock();
+      const drawer = document.getElementById("options-drawer");
+      const isOpen = drawer.classList.toggle("open");
+      const btn = document.getElementById("drawer-toggle-btn");
+      btn.textContent = isOpen
+        ? "⚙️ HIDE TACTICAL OPTIONS, DIFFICULTY & TENANT CLASSIFIER ▴"
+        : "⚙️ TACTICAL OPTIONS: MEAL SPICE DIFFICULTY, MIRROR CHECK & TENANT / USER CLASSIFIER ▾";
+      refreshClassifierReadout();
+    };
+
+    window.selectTenantProfile = function (tenantId) {
+      audio.unlock();
+      const profile = tenantClassifier.setTenant(tenantId);
+      sim.safeTitle = Boolean(profile.defaultSafeTitle);
+      document.getElementById("safe-title-toggle").checked = sim.safeTitle;
+      window.toggleSafeTitle();
+      refreshClassifierReadout();
+      audio.playTutorialDing();
+    };
+
+    window.exportTelemetryReport = function () {
+      audio.unlock();
+      tenantClassifier.exportSessionReport();
+      audio.playPickup();
+    };
+
     window.toggleOrientationMode = function () {
+      audio.unlock();
       sim.orientationMode = sim.orientationMode === "landscape" ? "portrait" : "landscape";
       engine.saveProgress();
       applyOrientationClasses();
@@ -300,13 +565,16 @@
     };
 
     window.cycleMenuExpression = function () {
+      audio.unlock();
       sim.menuExprIdx = (sim.menuExprIdx + 1) % EXPRESSION_META.length;
       const m = EXPRESSION_META[sim.menuExprIdx];
       document.getElementById("menu-expr-title").textContent = m.mirrorTitle;
       document.getElementById("menu-expr-desc").textContent = m.mirrorDesc;
+      audio.playPokerWhistle();
     };
 
     window.cycleTestExpression = function () {
+      audio.unlock();
       sim.menuExprIdx = (sim.menuExprIdx + 1) % EXPRESSION_META.length;
       const m = EXPRESSION_META[sim.menuExprIdx];
       sim.overrideExpression = m.id;
@@ -314,6 +582,7 @@
     };
 
     window.setDifficulty = function (tier) {
+      audio.unlock();
       sim.difficulty = tier;
       ["casual", "standard", "nightmare"].forEach((t) => {
         document.getElementById("diff-" + t).classList.toggle("active", t === tier);
@@ -329,38 +598,121 @@
     };
 
     window.openMenu = function () {
+      audio.unlock();
       sim.state = "menu";
       document.getElementById("hud-panel").style.display = "none";
       document.getElementById("gamepad-layer").style.display = "none";
+      document.getElementById("desktop-keybind-bar").style.display = "none";
       document.getElementById("cramp-warning-bar").style.display = "none";
       document.getElementById("interact-pill").style.display = "none";
       document.getElementById("bidet-modal").style.display = "none";
       document.getElementById("outcome-modal").style.display = "none";
+      document.getElementById("pause-modal").style.display = "none";
       document.getElementById("menu-modal").style.display = "flex";
+      refreshClassifierReadout();
       buildMenuList();
     };
 
-    window.startLevelByIndex = function (idx) {
+    window.startTutorialLevel = function () {
+      audio.unlock();
       document.getElementById("menu-modal").style.display = "none";
       document.getElementById("outcome-modal").style.display = "none";
       document.getElementById("bidet-modal").style.display = "none";
+      document.getElementById("pause-modal").style.display = "none";
       document.getElementById("hud-panel").style.display = "block";
-      document.getElementById("gamepad-layer").style.display = "block";
+      resizeCanvas();
+      engine.startTutorial();
+      syncControlModeVisibility(input.dial.inputSource, input.dial.hideTouchOverlay);
+      audio.playTutorialDing();
+    };
+
+    window.skipTutorialToCampaign = function () {
+      audio.unlock();
+      tenantClassifier.state.tutorialCompleted = true;
+      tenantClassifier.state.starterBonusUnlocked = true;
+      tenantClassifier.persist();
+      window.startLevelByIndex(0);
+    };
+
+    window.startLevelByIndex = function (idx) {
+      audio.unlock();
+      document.getElementById("menu-modal").style.display = "none";
+      document.getElementById("outcome-modal").style.display = "none";
+      document.getElementById("bidet-modal").style.display = "none";
+      document.getElementById("pause-modal").style.display = "none";
+      document.getElementById("hud-panel").style.display = "block";
       resizeCanvas();
       engine.startLevel(idx);
+      syncControlModeVisibility(input.dial.inputSource, input.dial.hideTouchOverlay);
+      audio.playTutorialDing();
     };
 
     window.retryCurrentLevel = function () {
-      window.startLevelByIndex(sim.currentLevelIdx);
+      audio.unlock();
+      if (sim.isTutorial) {
+        window.startTutorialLevel();
+      } else {
+        window.startLevelByIndex(sim.currentLevelIdx);
+      }
     };
 
     window.nextOrMenu = function () {
+      audio.unlock();
+      if (sim.isTutorial) {
+        if (tenantClassifier.getActiveTenant().id === "playable_ad") {
+          tenantClassifier.triggerPlayableAdCta();
+        }
+        window.startLevelByIndex(0);
+        return;
+      }
       if (sim.state === "won" && sim.currentLevelIdx < LEVELS_V2.length - 1) {
         window.startLevelByIndex(sim.currentLevelIdx + 1);
       } else {
         window.openMenu();
       }
     };
+
+    function populatePauseModal() {
+      const grid = document.getElementById("tooltip-grid");
+      grid.innerHTML = "";
+      TACTICAL_TOOLTIPS_V2.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "tooltip-card";
+        card.innerHTML = `
+          <div class="tooltip-card-title">${item.icon} ${item.name || item.title}</div>
+          <div class="tooltip-card-desc">${item.desc}</div>
+        `;
+        grid.appendChild(card);
+      });
+
+      const snap = tenantClassifier.getSnapshot();
+      const modeLabel = input.dial.hideTouchOverlay ? "Desktop Keyboard (WASD)" : "Mobile Touch Stick";
+      document.getElementById("pause-device-badge").textContent =
+        `${snap.deviceClass.toUpperCase()} • ${modeLabel}`;
+
+      const objBar = document.getElementById("objective-bar");
+      if (objBar) {
+        document.getElementById("pause-current-tip").textContent = objBar.textContent;
+      }
+    }
+
+    function refreshClassifierReadout() {
+      const snap = tenantClassifier.getSnapshot();
+      const pill = document.getElementById("menu-tenant-pill");
+      if (pill) {
+        pill.textContent = `${snap.tenantBadge} • ${snap.deviceClass === "desktop_computer" ? "💻 DESKTOP" : "📱 MOBILE"}`;
+      }
+      const readout = document.getElementById("classifier-live-readout");
+      if (readout) {
+        readout.textContent = `Archetype: ${snap.userSegment.archetypeLabel} | Tier: ${snap.userSegment.skillTier}`;
+      }
+      const tutBadge = document.getElementById("tutorial-badge-status");
+      if (tutBadge) {
+        tutBadge.textContent = tenantClassifier.state.starterBonusUnlocked
+          ? "✓ COMPLETED (+4s BONUS ACTIVE)"
+          : "START HERE!";
+      }
+    }
 
     function buildMenuList() {
       const list = document.getElementById("level-list");
@@ -372,17 +724,21 @@
           ? `BEST: ${sim.bestRecords[lvl.id].toFixed(1)}s left`
           : "UNPLAYED";
         const adjPar = Math.round(lvl.parSec * dCfg.timerMult);
+        const bonusTag =
+          idx === 0 && tenantClassifier.state.starterBonusUnlocked
+            ? ` • <span style="color:var(--amber);">🎓 +4s &amp; Flip-Flops</span>`
+            : "";
         const btn = document.createElement("button");
         btn.className = "level-btn";
         btn.onclick = () => window.startLevelByIndex(idx);
         btn.innerHTML = `
-          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:11.5px;">
+          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:11px;">
             <span>TERMINAL 0${lvl.num}: ${lvl.iata} — ${lvl.name}</span>
             <span style="color:var(--crimson);">CLOCK: ${adjPar}s</span>
           </div>
-          <div style="font-size:10px;margin-top:2px;font-weight:700;line-height:1.25;">${lvl.sub}</div>
-          <div style="font-size:9.5px;margin-top:3px;color:var(--emerald);font-weight:900;">
-            4-Wing Course (${lvl.pathMeters}m) • ${lvl.stalls.length} Mystery Stalls • ${best}
+          <div style="font-size:9.5px;margin-top:2px;font-weight:700;line-height:1.22;">${lvl.sub}</div>
+          <div style="font-size:9px;margin-top:2px;color:var(--emerald);font-weight:900;">
+            4-Wing Course (${lvl.pathMeters}m) • ${lvl.stalls.length} Stalls • ${best}${bonusTag}
           </div>
         `;
         list.appendChild(btn);
@@ -403,10 +759,12 @@
           <div style="font-size:9px;">${item.e}</div>
         `;
         btn.onclick = () => {
+          audio.unlock();
           if (item.win) {
             document.getElementById("bidet-modal").style.display = "none";
             engine.finishRun(true, "HANEDA WASHLET-9000 ELECTRONIC LID UNLOCKED!");
           } else {
+            audio.playLockedDoor();
             sim.bidetClock = Math.max(0.1, sim.bidetClock - 1.2);
           }
         };
@@ -431,6 +789,24 @@
           ' again."';
       document.getElementById("outcome-stats").textContent =
         `Remaining Clock: ${sim.timerSec.toFixed(1)}s  |  Final Suspicion: ${sim.suspicion.toFixed(0)}%`;
+
+      const snap = tenantClassifier.getSnapshot();
+      document.getElementById("outcome-archetype-tag").textContent =
+        `Classified Playstyle: ${snap.userSegment.archetypeLabel} (${snap.tenantName})`;
+
+      const nextBtn = document.getElementById("outcome-next-btn");
+      if (sim.isTutorial) {
+        nextBtn.textContent =
+          snap.tenantId === "playable_ad"
+            ? tenantClassifier.getActiveTenant().ctaLabel
+            : "🚀 PLAY TERMINAL 01: GOA (WITH +4s BONUS!)";
+      } else {
+        nextBtn.textContent =
+          won && sim.currentLevelIdx < LEVELS_V2.length - 1
+            ? "🚀 NEXT TERMINAL"
+            : "🗺️ BOARDING PASS";
+      }
+
       drawJohnnyExpression(
         outcomeCtx,
         outcomeCanvas.width,
@@ -445,8 +821,13 @@
       const p = sim.player;
       const lvl = sim.activeLvl;
 
-      document.getElementById("hud-level-label").textContent = `${lvl.iata} | BOWEL CLOCK`;
+      document.getElementById("hud-level-label").textContent = `${lvl.iata} | CLOCK`;
       document.getElementById("hud-timer-val").textContent = `${sim.timerSec.toFixed(1)}s`;
+
+      const skipBtn = document.getElementById("hud-skip-tut-btn");
+      if (skipBtn) {
+        skipBtn.style.display = sim.isTutorial ? "inline-block" : "none";
+      }
 
       const pct = Math.max(0, (sim.timerSec / sim.maxTimerSec) * 100);
       const tBar = document.getElementById("hud-timer-bar");
@@ -462,7 +843,7 @@
 
       const exprMeta =
         EXPRESSION_META.find((e) => e.id === sim.activeExpression) || EXPRESSION_META[0];
-      document.getElementById("facecam-label").textContent = exprMeta.label;
+      document.getElementById("facecam-label").textContent = exprMeta.label.split(" ")[0];
       drawJohnnyExpression(
         facecamCtx,
         facecamCanvas.width,
@@ -471,9 +852,15 @@
         sim.worldClock
       );
 
-      // Update 4-Button Arcade Diamond Sub-Status & Cooldowns
+      // Progressive Button Unlocking during Tutorial (GAME TUTORIAL GUIDE: introduce 1 mechanic at a time)
+      const tutStep = sim.isTutorial
+        ? TUTORIAL_STEPS_V2[Math.min((sim.tutorialStep || 1) - 1, TUTORIAL_STEPS_V2.length - 1)]
+        : null;
+      const unlockedList = tutStep ? tutStep.unlockedBtns : ["a", "b", "x", "y"];
+
       const btnA = document.getElementById("btn-arcade-a");
       const subA = document.getElementById("sub-btn-a");
+      btnA.style.opacity = unlockedList.includes("a") ? "1" : "0.28";
       if (sim.nearestInteractable) {
         btnA.classList.add("pulse-ready");
         subA.textContent = "NOW!";
@@ -484,6 +871,7 @@
 
       const btnB = document.getElementById("btn-arcade-b");
       const subB = document.getElementById("sub-btn-b");
+      btnB.style.opacity = unlockedList.includes("b") ? "1" : "0.28";
       if (p.clenchActive > 0) {
         btnB.classList.remove("on-cooldown");
         subB.textContent = "HOLD!";
@@ -497,6 +885,7 @@
 
       const btnX = document.getElementById("btn-arcade-x");
       const subX = document.getElementById("sub-btn-x");
+      btnX.style.opacity = unlockedList.includes("x") ? "1" : "0.28";
       if (p.pokerFaceTimer > 0) {
         btnX.classList.remove("on-cooldown");
         subX.textContent = `${p.pokerFaceTimer.toFixed(1)}s`;
@@ -510,6 +899,7 @@
 
       const btnY = document.getElementById("btn-arcade-y");
       const subY = document.getElementById("sub-btn-y");
+      btnY.style.opacity = unlockedList.includes("y") ? "1" : "0.28";
       if (p.elbowDashTimer > 0) {
         btnY.classList.remove("on-cooldown");
         subY.textContent = "GO!";
@@ -528,10 +918,10 @@
         warnBar.textContent =
           p.clenchActive > 0
             ? "🍑 IRON CLENCH ACTIVE — CRAMP WAVE BLOCKED!"
-            : "💥 CRAMP WAVE ACTIVE! WALK OR TAP [B] CLENCH!";
+            : "💥 CRAMP WAVE ACTIVE! WALK OR TAP [B] / [SPACE] CLENCH!";
       } else if (sim.timeToNextCramp <= 3.0) {
         warnBar.style.display = "block";
-        warnBar.textContent = `⚠ GUT RUMBLE IN ${sim.timeToNextCramp.toFixed(1)}s — SLOW TO A WALK OR HIT [B] CLENCH!`;
+        warnBar.textContent = `⚠ GUT RUMBLE IN ${sim.timeToNextCramp.toFixed(1)}s — WALK OR HIT [B] / [SPACE] CLENCH!`;
       } else {
         warnBar.style.display = "none";
       }
@@ -540,31 +930,31 @@
       const pill = document.getElementById("interact-pill");
       if (sim.nearestInteractable) {
         pill.style.display = "block";
-        pill.textContent = `TAP [A] OR PAUSE: ${sim.nearestInteractable.label}`;
+        pill.textContent = `TAP [A] / PRESS [E]: ${sim.nearestInteractable.label}`;
       } else {
         pill.style.display = "none";
       }
 
-      // Section 3.1 Human-First HUD Stage Objective Bar
+      // HUD Stage Objective Bar (Shows progressive tutorial prompt when in Tutorial mode)
       const objEl = document.getElementById("objective-bar");
-      const allBarricadesCleared = lvl.hazards.every((h) => h.cleared);
-      if (p.y > lvl.secLineY) {
-        objEl.textContent = UI_COPY_V2.hudObjectives.stage1;
-      } else if (!allBarricadesCleared) {
-        objEl.textContent = UI_COPY_V2.hudObjectives.stage2;
+      if (sim.isTutorial && tutStep) {
+        const promptText = input.dial.hideTouchOverlay ? tutStep.promptDesktop : tutStep.promptMobile;
+        objEl.textContent = `${tutStep.title} — ${promptText}`;
       } else {
-        objEl.textContent = UI_COPY_V2.hudObjectives.stage3;
+        const allBarricadesCleared = lvl.hazards.every((h) => h.cleared);
+        if (p.y > lvl.secLineY) {
+          objEl.textContent = UI_COPY_V2.hudObjectives.stage1;
+        } else if (!allBarricadesCleared) {
+          objEl.textContent = UI_COPY_V2.hudObjectives.stage2;
+        } else {
+          objEl.textContent = UI_COPY_V2.hudObjectives.stage3;
+        }
       }
 
-      // Active Status Badges
+      // Compact Active Status Badges
       const badges = [];
-      badges.push(
-        `<span class="badge" style="background:#2b6cb0;">FACE: ${exprMeta.label}</span>`
-      );
       if (p.pokerFaceTimer > 0) {
-        badges.push(
-          `<span class="badge" style="background:var(--amber);color:#141413;">🎭 POKER FACE (-50% GUARD ALERT)</span>`
-        );
+        badges.push(`<span class="badge" style="background:var(--amber);color:#141413;">🎭 POKER FACE</span>`);
       }
       if (p.flipFlops) {
         badges.push(`<span class="badge" style="background:var(--emerald);">🩴 GRIP SOLES</span>`);
@@ -576,17 +966,10 @@
         badges.push(`<span class="badge" style="background:var(--emerald);">🎫 VIP PASS</span>`);
       }
       if (p.clipboardRevealed) {
-        badges.push(`<span class="badge" style="background:var(--emerald);">📋 TOILET MAPPED</span>`);
+        badges.push(`<span class="badge" style="background:var(--emerald);">📋 MAPPED</span>`);
       }
       if (p.speedBoostTimer > 0) {
-        badges.push(
-          `<span class="badge" style="background:var(--crimson);">🌶️ TURBO (${p.speedBoostTimer.toFixed(1)}s)</span>`
-        );
-      }
-      if (p.friskTimer > 0) {
-        badges.push(
-          `<span class="badge" style="background:var(--crimson);">🧤 FRISKED (${p.friskTimer.toFixed(1)}s)</span>`
-        );
+        badges.push(`<span class="badge" style="background:var(--crimson);">🌶️ TURBO</span>`);
       }
       document.getElementById("hud-badges").innerHTML = badges.join("");
     }
@@ -596,6 +979,12 @@
     window.toggleSafeTitle();
     window.setDifficulty(sim.difficulty);
     applyOrientationClasses();
+    refreshClassifierReadout();
+
+    // If launched as an In-App Playable Ad (?tenant=playable_ad), boot directly into the 30s Interactive Tutorial!
+    if (tenantClassifier.getActiveTenant().autoStartTutorial) {
+      window.startTutorialLevel();
+    }
 
     // Main 60 FPS Loop
     let lastMs = performance.now();

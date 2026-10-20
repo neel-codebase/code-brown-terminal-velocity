@@ -1,15 +1,84 @@
 /**
  * @file maps_v2.js
- * @version 2.0.0
- * @description Isolated ES Module containing the 3.5x Expanded 4-Wing Multi-Concourse
- * Airport Layouts (165m–240m effective serpentine path length, calibrated for 60–90s rounds).
- * Levels:
- *   1. GOI (Goa Dabolim)        — 48m x 62m (165m path, 68s Par, 5 Mystery Stalls)
- *   2. JFK (New York T4)        — 54m x 70m (190m path, 75s Par, 5 Mystery Stalls, 2 Mop Barricades)
- *   3. LHR (London Heathrow T5) — 56m x 74m (205m path, 82s Par, 6 Mystery Stalls, Reversing Travelators)
- *   4. SIN (Singapore Jewel)    — 60m x 78m (220m path, 86s Par, 5 Mystery Stalls, Rain Vortex + 3 Robo-Scrubbers)
- *   5. DXB -> HND (Finale)      — 64m x 84m (240m path, 90s Par, 6 Mystery Stalls, 4 Perfume Spritzers + 12-Key Washlet Boss)
+ * @version 2.1.0
+ * @description Isolated ES Module containing:
+ *   0. TUTORIAL_LEVEL_V2 (Gate 00: 30s Interactive Onboarding & Playable Ad Demo)
+ *   1..5. LEVELS_V2 (3.5x Expanded 4-Wing Multi-Concourse Airport Layouts)
  */
+
+export const TUTORIAL_LEVEL_V2 = {
+  id: "level_00_tutorial",
+  num: 0,
+  isTutorial: true,
+  iata: "GATE 00",
+  name: "Express Layover (30s Interactive Tutorial)",
+  sub: "Learn to walk past security, clench through cramps, and lure the janitor in 30 seconds!",
+  parSec: 75,
+  pathMeters: 42,
+  crampInterval: 18,
+  spawnBark: "spawn_tutorial",
+  world: { w: 28, h: 36 },
+  spawn: { x: 14.0, y: 31.5 },
+  secLineY: 22.0,
+  restroomWingY: 10.0,
+  waterfallZone: null,
+  shuttleGateY: null,
+  bidetBoss: false,
+  wings: [
+    { id: "T1", yMin: 24, yMax: 36, label: "STEP 1: MOVE UP THE CONCOURSE", dirArrow: "⬆ WALK NORTH TO START" },
+    { id: "T2", yMin: 16, yMax: 24, label: "STEP 2: WALK CALMLY PAST SECURITY", dirArrow: "⬆ STEALTH WALK OR [X] POKER FACE" },
+    { id: "T3", yMin: 10, yMax: 16, label: "STEP 3 & 4: CLENCH & LURE JANITOR", dirArrow: "⬆ KICK TRASH BIN OR GRAB MINTS" },
+    { id: "T4", yMin: 0,  yMax: 10, label: "STEP 5: REACH THE OPEN THRONE!", dirArrow: "🚽 CHECK THE STALL DOORS!" }
+  ],
+  palms: [
+    { x: 4.0, y: 32.0 }, { x: 24.0, y: 32.0 }, { x: 4.0, y: 13.0 }, { x: 24.0, y: 13.0 }
+  ],
+  walls: [
+    { x: 0, y: 0, w: 28, h: 1.2, label: "" },
+    { x: 0, y: 34.8, w: 28, h: 1.2, label: "" },
+    { x: 0, y: 0, w: 1.2, h: 36, label: "" },
+    { x: 26.8, y: 0, w: 1.2, h: 36, label: "" },
+    // Gentle side guide rails
+    { x: 1.2, y: 22.0, w: 6.8, h: 1.4, label: "SECURITY STANCHION", isStanchion: true },
+    { x: 20.0, y: 22.0, w: 6.8, h: 1.4, label: "X-RAY ARCH", isXray: true },
+    // Restroom Sanctuary Partition (y = 9.5, doorway at x = 11.2..16.8)
+    { x: 1.2, y: 9.2, w: 10.0, h: 1.4, label: "RESTROOM WALL" },
+    { x: 16.8, y: 9.2, w: 10.0, h: 1.4, label: "RESTROOM WALL" }
+  ],
+  wetZones: [
+    { x: 4.0, y: 26.0, w: 4.5, h: 3.2, label: "WET PUDDLE" }
+  ],
+  walkways: [],
+  crowds: [],
+  props: [
+    { id: "p_tut_shoes", type: "footwear", x: 6.2, y: 30.5, r: 2.1, used: false, label: "🩴 FREE GRIP FLIP-FLOPS" },
+    { id: "p_tut_mints", type: "bribe", x: 7.5, y: 13.5, r: 2.2, used: false, label: "🍬 SPEARMINT TIN (BRIBE)" },
+    { id: "p_tut_bin", type: "distract", target: "j_mop_tut", x: 20.5, y: 13.0, r: 2.3, used: false, label: "🗑️ KICK TRASH BIN (LURE JANITOR)" }
+  ],
+  hazards: [
+    {
+      id: "j_mop_tut",
+      x: 14.0, y: 9.9, w: 5.4, h: 1.8,
+      homeX: 14.0, homeY: 9.9,
+      lureX: 20.5, lureY: 13.2,
+      cleared: false,
+      label: "🚧 JANITOR MOP CART"
+    }
+  ],
+  guards: [
+    {
+      id: "g_tut_1",
+      x: 10.0, y: 20.0,
+      ax: 6.0, ay: 20.0, bx: 22.0, by: 20.0,
+      spd: 1.8, range: 6.8, fovDeg: 50,
+      angle: 0, dir: 1, label: "SLEEPY GATE GUARD"
+    }
+  ],
+  stalls: [
+    { id: "s_tut_1", x: 7.5,  y: 2.4, w: 4.6, h: 3.0, open: false, inspected: false, label: "STALL #1" },
+    { id: "s_tut_2", x: 15.9, y: 2.4, w: 4.6, h: 3.0, open: true,  inspected: false, label: "STALL #2" }
+  ]
+};
 
 export const LEVELS_V2 = [
   // ===========================================================================
