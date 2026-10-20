@@ -1,15 +1,16 @@
 /**
  * @file sim_engine_v2.js
- * @version 2.1.0
- * @description Pure Deterministic Simulation Engine for v2.1:
- *   - Interactive 5-Step Tutorial Level + Playable Ad Mode (Non-punishing safety net & starter bonus)
- *   - Mobile-Unlocked Audio & Haptics hooks for every action
- *   - Streamlined Instant Contact Pickup for passive gear + Pause & Click-to-Inspect
- *   - BUG-01..05 fixes & 10-Expression Active Gameplay Dynamics Matrix
+ * @version 2.2.0
+ * @description Pure Deterministic Simulation Engine for v2.2.0 ("Fun & Focus Cut"):
+ *   - Faster, Snappier Player Speed (4.5 m/s walk / 7.1 m/s sprint / 9.4 m/s dash)
+ *   - Zero-Popup In-World Comedy (Speech Bubbles & Floating Flares only — no banner clutter!)
+ *   - Auto-Bribe Janitors on Contact with 🍬 Mints & Instant Walk-Up Decoy Stall Checks
+ *   - Progressive 5-Level Campaign Curve + 20s Warm-Up Tutorial / Playable Ad
  */
 
 import {
   UI_COPY_V2,
+  DECOY_BARKS_V2,
   EXPRESSION_DYNAMICS,
   DIALOGUES,
   TUTORIAL_STEPS_V2
@@ -249,26 +250,13 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
     const d = DIALOGUES[key];
     if (!d) return;
     sim.overrideExpression = d.expr;
-    sim.overrideExprTimer = 3.0;
-    sim.bannerClock = 3.2;
-    if (withSlowMo) {
-      sim.slowMoTimer = 0.85;
-    }
+    sim.overrideExprTimer = 2.6;
     if (d.bubble && sim.activeLvl) {
       const bubbleType =
         d.expr === "panic_stare" || d.expr === "clenched_grimace" || d.expr === "bergamot_stun"
           ? "alert"
           : "player";
-      spawnSpeechBubble(sim.player.x, sim.player.y, d.bubble, bubbleType, 2.1);
-    }
-    sim.activeToast = {
-      speaker: d.speaker,
-      text: d.text,
-      tip: d.tip,
-      expr: d.expr
-    };
-    if (callbacks.onShowBanner) {
-      callbacks.onShowBanner(d);
+      spawnSpeechBubble(sim.player.x, sim.player.y, d.bubble, bubbleType, 1.85);
     }
   }
 
@@ -508,10 +496,11 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
         triggerEventBark("tsa_bypass", false);
       } else if (prop.type === "spicy_food") {
         prop.used = true;
-        p.speedBoostTimer = 6.0;
-        sim.timerSec = Math.max(0.5, sim.timerSec - 8.0);
-        sim.screenShakeTimer = 0.35;
+        p.speedBoostTimer = 6.5;
+        sim.timerSec = Math.max(0.5, sim.timerSec - 6.0);
+        sim.screenShakeTimer = 0.28;
         if (audio) audio.playDash();
+        spawnRewardFlare(p.x, p.y, "🌶️ TURBO SPEED! (-6s)");
         triggerEventBark("spicy_pretzel", false);
       } else if (prop.type === "intel_clipboard") {
         prop.used = true;
@@ -533,7 +522,7 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
         }
         spawnRewardFlare(p.x, p.y, "🗑️ JANITOR LURED AWAY!");
         triggerEventBark("distract_triggered", false);
-        if (sim.isTutorial) advanceTutorialStep(5, "✨ DOOR UNSEALED!");
+        if (sim.isTutorial) advanceTutorialStep(3, "✨ DOOR UNSEALED!");
       }
     } else if (target.kind === "hazard_bribe") {
       const hz = target.ref;
@@ -546,9 +535,10 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       }
       spawnRewardFlare(p.x, p.y, "✅ JANITOR BRIBED!");
       triggerEventBark("bribe_mints", false);
-      if (sim.isTutorial) advanceTutorialStep(5, "✨ DOOR UNSEALED!");
+      if (sim.isTutorial) advanceTutorialStep(3, "✨ DOOR UNSEALED!");
     } else if (target.kind === "stall") {
       const st = target.ref;
+      const wasInspected = st.inspected;
       st.inspected = true;
       if (st.open) {
         if (lvl.bidetBoss) {
@@ -559,17 +549,29 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
           finishRun(
             true,
             sim.isTutorial
-              ? "TUTORIAL COMPLETE! YOU'RE CERTIFIED FOR TERMINAL VELOCITY!"
+              ? "WARM-UP COMPLETE! YOU'RE READY FOR TERMINAL 01: GOA (+4s & FLIP-FLOPS UNLOCKED)!"
               : "THRONE SECURED IN TIME!"
           );
         }
       } else {
-        if (!sim.isTutorial) {
+        if (!sim.isTutorial && !wasInspected) {
           sim.timerSec = Math.max(0.2, sim.timerSec - 1.5);
+          spawnRewardFlare(st.x + st.w * 0.5, st.y + st.h, "🔒 DECOY! (-1.5s)");
+        } else {
+          spawnRewardFlare(st.x + st.w * 0.5, st.y + st.h, "🔒 OCCUPIED DECOY!");
         }
-        sim.screenShakeTimer = 0.25;
+        sim.screenShakeTimer = 0.22;
+        sim.overrideExpression = "twitching_eyebrow";
+        sim.overrideExprTimer = 2.2;
         if (audio) audio.playLockedDoor();
-        triggerEventBark("locked_stall", false);
+        const barkIdx = Math.floor(Math.random() * DECOY_BARKS_V2.length);
+        spawnSpeechBubble(
+          st.x + st.w * 0.5,
+          st.y + st.h,
+          DECOY_BARKS_V2[barkIdx],
+          "alert",
+          2.0
+        );
       }
     }
   }
@@ -714,14 +716,12 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       colliders.push({ x: 1.2, y: lvl.shuttleGateY - 0.6, w: 12.0, h: 1.2 });
     }
 
-    // --- PROGRESSIVE TUTORIAL STEP TRIGGERS (GAME TUTORIAL GUIDE) ---
+    // --- PROGRESSIVE 3-STEP TUTORIAL TRIGGERS ---
     if (sim.isTutorial) {
-      if (sim.tutorialStep === 1 && p.y <= 25.0) {
+      if (sim.tutorialStep === 1 && p.y <= 21.5) {
         advanceTutorialStep(2, "✨ NICE MOVES! (+3s)");
-      } else if (sim.tutorialStep === 2 && p.y <= 16.5) {
-        advanceTutorialStep(3, "✨ STEALTH PASSED! (+3s)");
-      } else if (sim.tutorialStep === 3 && p.y <= 13.5) {
-        advanceTutorialStep(4, "✨ ALMOST THERE!");
+      } else if (sim.tutorialStep === 2 && p.y <= 10.5) {
+        advanceTutorialStep(3, "✨ CHECK THE 3 STALLS!");
       }
     }
 
@@ -766,9 +766,9 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       sim.timerSec -= (baseDrain + crampPenalty) * dt;
     }
 
-    // Tutorial Non-Punishing Safety Net (Pitfall #6: Never fail a learner in the tutorial!)
+    // Tutorial Non-Punishing Safety Net
     if (sim.isTutorial && sim.timerSec < 15.0) {
-      sim.timerSec = 45.0;
+      sim.timerSec = 40.0;
       spawnRewardFlare(p.x, p.y, "💡 TUTORIAL SAFETY REFILL!");
     }
 
@@ -778,7 +778,7 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       return;
     }
 
-    // --- 2. PLAYER MOVEMENT WITH EXPRESSION DYNAMICS & CORNER SLIDING ---
+    // --- 2. FASTER, SNAPPIER PLAYER MOVEMENT (v2.2.0: 4.5 m/s Walk, 7.1 m/s Sprint, 9.4 m/s Dash) ---
     let moveVx = 0;
     let moveVy = 0;
 
@@ -786,9 +786,9 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       moveVx = 0;
       moveVy = 0;
     } else if (p.elbowDashTimer > 0) {
-      moveVx = p.dashDirX * 7.2;
-      moveVy = p.dashDirY * 7.2;
-      p.waddlePhase += dt * 22;
+      moveVx = p.dashDirX * 9.4;
+      moveVy = p.dashDirY * 9.4;
+      p.waddlePhase += dt * 24;
     } else if (p.stunTimer > 0 && dial.tier === "stop") {
       moveVx = 0;
       moveVy = 0;
@@ -798,8 +798,8 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       moveVy = p.slipVy;
     } else if (dial.tier !== "stop") {
       p.hiding = false;
-      let spd = dial.tier === "walk" ? 3.5 * dyn.walkMult : 5.7 * dyn.sprintMult;
-      if (p.speedBoostTimer > 0) spd *= 1.28;
+      let spd = dial.tier === "walk" ? 4.5 * dyn.walkMult : 7.1 * dyn.sprintMult;
+      if (p.speedBoostTimer > 0) spd *= 1.30;
       if (sim.crampActiveSec > 0 && dial.tier === "sprint") spd *= 0.62;
 
       let dirAngle = Math.atan2(dial.vy, dial.vx);
@@ -811,7 +811,7 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       moveVy = Math.sin(dirAngle) * spd;
       p.facingX = Math.cos(dirAngle);
       p.facingY = Math.sin(dirAngle);
-      p.waddlePhase += dt * (dial.tier === "sprint" ? 18 : 9);
+      p.waddlePhase += dt * (dial.tier === "sprint" ? 20 : 11);
       if (audio) audio.playStep(dt, dial.tier === "sprint");
     }
 
@@ -834,10 +834,10 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
     ) {
       for (let i = 0; i < lvl.wetZones.length; i++) {
         if (pointInRect(p.x, p.y, lvl.wetZones[i])) {
-          p.slipTimer = 1.6;
+          p.slipTimer = 1.4;
           const mag = Math.hypot(moveVx, moveVy) || 1;
-          p.slipVx = (moveVx / mag) * 6.2;
-          p.slipVy = (moveVy / mag) * 6.2;
+          p.slipVx = (moveVx / mag) * 6.8;
+          p.slipVy = (moveVy / mag) * 6.8;
           sim.screenShakeTimer = 0.22;
           if (audio) audio.playSlip();
           triggerEventBark("hit_wet_floor", false);
@@ -863,9 +863,9 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
 
       const dPlayer = Math.hypot(p.x - c.x, p.y - c.y);
 
-      if ((dyn.terrifiesCrowds || p.elbowDashTimer > 0) && dPlayer < 2.35 && dPlayer > 0.01) {
+      if ((dyn.terrifiesCrowds || p.elbowDashTimer > 0) && dPlayer < 2.4 && dPlayer > 0.01) {
         const pushAwayY = c.y < p.y ? -1 : 1;
-        c.y = Math.max(2.2, Math.min(lvl.world.h - 2.2, c.y + pushAwayY * 3.8 * dt));
+        c.y = Math.max(2.2, Math.min(lvl.world.h - 2.2, c.y + pushAwayY * 4.2 * dt));
         c.partedTimer = 0.9;
       } else if (c.partedTimer > 0) {
         c.partedTimer -= dt;
@@ -895,15 +895,15 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       }
     });
 
-    // --- 4. AUTOMATIC CONTACT PROPS (GEAR PICKUPS + TSA FRISK + PERFUME) ---
-    // Streamlined UX: Walking over Flip-Flops, VIP Pass, Mints, or Clipboard picks them up automatically!
+    // --- 4. AUTOMATIC CONTACT INTERACTIONS (PICKUPS, BRIBES, SABOTAGE & STALL CHECKS) ---
+    // v2.2.0 Zero-Friction Flow: Walking up to items, janitors (with mints), trash bins, or mystery stalls works on contact!
     lvl.props.forEach((prop) => {
       if (prop.used) return;
       const d = Math.hypot(p.x - prop.x, p.y - prop.y);
 
       if (
-        ["footwear", "tsa_pass", "bribe", "intel_clipboard"].includes(prop.type) &&
-        d < 1.55
+        ["footwear", "tsa_pass", "bribe", "intel_clipboard", "distract", "spicy_food"].includes(prop.type) &&
+        d < 1.65
       ) {
         executeContextInteraction({ kind: "prop", ref: prop, id: prop.id, label: prop.label });
         return;
@@ -916,25 +916,55 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
           spawnRewardFlare(p.x, p.y, "⚡ VIP BYPASS! 0s DELAY!");
           triggerEventBark("tsa_bypass_used", false);
         } else {
-          p.friskTimer = 4.2;
-          sim.timerSec = Math.max(0.5, sim.timerSec - 4.0);
+          p.friskTimer = 3.8;
+          sim.timerSec = Math.max(0.5, sim.timerSec - 3.5);
           sim.screenShakeTimer = 0.3;
           if (audio) audio.playAlert();
           triggerEventBark("tsa_patdown", false);
         }
       } else if (prop.type === "perfume_ambush" && d < prop.r && p.elbowDashTimer <= 0) {
         prop.used = true;
-        p.stunTimer = 2.0;
-        sim.perfumeFlashTimer = 2.0;
+        p.stunTimer = 1.8;
+        sim.perfumeFlashTimer = 1.8;
         sim.screenShakeTimer = 0.22;
         if (audio) audio.playSlip();
         triggerEventBark("perfume_stun", false);
       }
     });
 
-    // --- 5. CONTEXTUAL INTERACTABLE SCAN (SABOTAGE, BRIBE, STALLS) ---
+    // Auto-Bribe Janitor on Contact when carrying Mints!
+    lvl.hazards.forEach((hz) => {
+      if (!hz.cleared && p.item === "mints") {
+        const d = Math.hypot(p.x - hz.x, p.y - hz.y);
+        if (d < 2.75) {
+          executeContextInteraction({
+            kind: "hazard_bribe",
+            ref: hz,
+            id: hz.id,
+            label: "🍬 BRIBE JANITOR WITH MINTS"
+          });
+        }
+      }
+    });
+
+    // Auto-Check Mystery Stall Doors when walking right up to the door!
+    lvl.stalls.forEach((st) => {
+      const cx = st.x + st.w * 0.5;
+      const cy = st.y + st.h;
+      const d = Math.hypot(p.x - cx, p.y - cy);
+      if (d < 1.85 && (!st.inspected || st.open)) {
+        executeContextInteraction({
+          kind: "stall",
+          ref: st,
+          id: st.id,
+          label: "🚽 CHECK STALL DOOR"
+        });
+      }
+    });
+
+    // --- 5. CONTEXTUAL INTERACTABLE SCAN (FOR [A]/[E] BUTTON AT WIDER RANGE) ---
     let bestTarget = null;
-    let bestDist = 2.1 + (dyn.reachBonus || 0);
+    let bestDist = 2.6 + (dyn.reachBonus || 0);
 
     lvl.props.forEach((prop) => {
       if (prop.used || prop.type === "security_frisk" || prop.type === "perfume_ambush") return;
@@ -948,7 +978,7 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
     lvl.hazards.forEach((hz) => {
       if (!hz.cleared && p.item === "mints") {
         const d = Math.hypot(p.x - hz.x, p.y - hz.y);
-        if (d < 3.0 + (dyn.reachBonus || 0)) {
+        if (d < 3.4 + (dyn.reachBonus || 0)) {
           bestTarget = {
             kind: "hazard_bribe",
             ref: hz,
@@ -963,7 +993,7 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
       const cx = st.x + st.w * 0.5;
       const cy = st.y + st.h;
       const d = Math.hypot(p.x - cx, p.y - cy);
-      if (d < 2.4 + (dyn.reachBonus || 0)) {
+      if (d < 2.7 + (dyn.reachBonus || 0)) {
         bestTarget = {
           kind: "stall",
           ref: st,
@@ -971,30 +1001,13 @@ export function createSimulationEngine(callbacks, audio, tenantClassifier) {
           label: st.inspected
             ? st.open
               ? "🚽 ENTER OPEN THRONE!"
-              : "🔒 LOCKED STALL"
+              : "🔒 LOCKED DECOY STALL"
             : "🚽 CHECK STALL DOOR"
         };
       }
     });
 
     sim.nearestInteractable = bestTarget;
-
-    // Snappy auto-trigger when pausing near a stall/trash bin/janitor (0.28s)
-    if (bestTarget && dial.tier === "stop" && p.friskTimer <= 0) {
-      if (p.dwellPropId !== bestTarget.id) {
-        p.dwellPropId = bestTarget.id;
-        p.dwellTime = 0;
-      }
-      p.dwellTime += dt * (dyn.interactSpeedMult || 1.0);
-      const reqTime = bestTarget.kind === "stall" ? Math.min(0.28, dyn.stallInspectSec || 0.28) : 0.28;
-      if (p.dwellTime >= reqTime) {
-        executeContextInteraction(bestTarget);
-        p.dwellTime = 0;
-      }
-    } else {
-      p.dwellPropId = null;
-      p.dwellTime = 0;
-    }
 
     // --- 6. GUARD PATROL, CHASE AI (BUG-02 FIXED) & STEALTH SUSPICION ---
     let spottedByAny = false;

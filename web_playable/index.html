@@ -3,48 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Code Brown: Terminal Velocity (v2.1) — Playable Stealth-Action Comedy</title>
+  <title>Code Brown: Terminal Velocity (v2.2) — Playable Stealth-Action Comedy</title>
   <link rel="stylesheet" href="./css/styles_v2.css" />
 </head>
 <body>
   <div id="phone-frame" class="landscape-mode">
     <canvas id="game-canvas"></canvas>
 
-    <!-- ULTRA-COMPACT 48PX TOP HUD PANEL (MAXIMIZES PHONE MAP VISIBILITY) -->
+    <!-- ULTRA-MINIMAL 34PX SINGLE-STRIP TOP HUD (FREES UP >93% OF SCREEN REAL ESTATE) -->
     <div class="hud-top" id="hud-panel" style="display:none;">
       <div class="hud-main-grid">
         <div class="facecam-box" onclick="window.cycleTestExpression()" title="Tap to test facial expressions">
-          <canvas id="facecam-canvas" width="42" height="40"></canvas>
+          <canvas id="facecam-canvas" width="32" height="32"></canvas>
           <div id="facecam-label">COOL</div>
         </div>
         <div class="hud-bars-col">
           <div class="hud-row">
-            <span id="hud-level-label">GOI | CLOCK</span>
-            <span id="hud-timer-val" style="font-size:12px;color:var(--amber);">68.0s</span>
-            <div class="hud-btn-group">
-              <button class="btn-primary" id="hud-skip-tut-btn" style="padding:2px 5px;font-size:8.5px;margin:0;display:none;background:var(--emerald);color:#fff;" onclick="window.skipTutorialToCampaign()" title="Skip Tutorial & Start Terminal 01">⏭ SKIP</button>
-              <button class="btn-primary" id="hud-zoom-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleCameraZoom()" title="Toggle Wide-Angle Camera Zoom">🔍 ZOOM</button>
-              <button class="btn-primary" id="hud-sfx-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleAudioMute()" title="Toggle Procedural Sound Effects">🔊 SFX</button>
-              <button class="btn-primary" id="hud-pause-btn" style="padding:2px 6px;font-size:8.5px;margin:0;background:var(--amber);" onclick="window.togglePauseModal()" title="Pause & Tactical Field Guide ([P] or [Esc])">⏸ PAUSE / ?</button>
-              <button class="btn-primary" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.openMenu()">MAP</button>
-            </div>
+            <span id="hud-level-label">GOI</span>
+            <span id="hud-timer-val" style="font-size:11.5px;color:var(--amber);">44.0s</span>
+            <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
           </div>
-          <div class="bar-track"><div id="hud-timer-bar" class="bar-fill" style="width:100%;background:var(--emerald);"></div></div>
           <div class="hud-row">
-            <span>SECURITY ALERT</span>
-            <span id="hud-susp-val">0%</span>
+            <span style="font-size:8.5px;color:#cbd5e0;">ALERT</span>
+            <span id="hud-susp-val" style="font-size:10px;">0%</span>
+            <div class="bar-track" style="width:36px;"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
           </div>
-          <div class="bar-track"><div id="hud-susp-bar" class="bar-fill" style="width:0%;background:var(--paper);"></div></div>
+          <div id="objective-bar">💡 Goal: Slip past Security!</div>
+          <div class="badge-strip" id="hud-badges" style="margin:0;flex-wrap:nowrap;"></div>
+          <div class="hud-btn-group">
+            <button class="btn-primary" id="hud-skip-tut-btn" style="padding:2px 5px;font-size:8.5px;margin:0;display:none;background:var(--emerald);color:#fff;" onclick="window.skipTutorialToCampaign()" title="Skip Tutorial & Start Terminal 01">⏭ SKIP</button>
+            <button class="btn-primary" id="hud-zoom-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleCameraZoom()" title="Toggle Wide-Angle Camera Zoom">🔍</button>
+            <button class="btn-primary" id="hud-sfx-btn" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.toggleAudioMute()" title="Toggle Sound Effects">🔊</button>
+            <button class="btn-primary" id="hud-pause-btn" style="padding:2px 5px;font-size:8.5px;margin:0;background:var(--amber);" onclick="window.togglePauseModal()" title="Pause & Field Guide ([P] or [Esc])">⏸</button>
+            <button class="btn-primary" style="padding:2px 5px;font-size:8.5px;margin:0;" onclick="window.openMenu()" title="Return to Boarding Pass">🗺️</button>
+          </div>
         </div>
       </div>
-      <div class="badge-strip" id="hud-badges"></div>
-      <div id="objective-bar">💡 Tip: Get past the Security Checkpoint!</div>
     </div>
 
     <!-- PRE-CRAMP 3s WARNING BAR -->
-    <div id="cramp-warning-bar">⚠ GUT RUMBLE IN 2.5s — SLOW TO A WALK OR HIT [B] / [SPACE] CLENCH!</div>
+    <div id="cramp-warning-bar">⚠ GUT RUMBLE IN 2.5s — WALK OR HIT [B] / [SPACE] CLENCH!</div>
 
-    <!-- SLIM NON-BLOCKING TOAST TICKER (NEVER BLOCKS MAP OR GAMEPLAY) -->
+    <!-- LEGACY BANNER CONTAINER (KEPT FOR DOM COMPATIBILITY, HIDDEN IN V2.2) -->
     <div id="comic-banner" onclick="window.dismissBanner()">
       <div class="comic-inner">
         <canvas id="cutin-face-canvas" width="38" height="38"></canvas>
@@ -81,10 +81,10 @@
           <span>IRON<br/>CLENCH</span>
           <span class="btn-sub-status" id="sub-btn-b">READY</span>
         </button>
-        <button class="arcade-btn btn-a" id="btn-arcade-a" title="[A] Instant Action / Inspect (E key)">
+        <button class="arcade-btn btn-a" id="btn-arcade-a" title="[A] Instant Action / Bribe / Inspect (E key)">
           <span class="btn-key-badge">[A]</span>
-          <span id="label-btn-a">ACTION<br/>INSPECT</span>
-          <span class="btn-sub-status" id="sub-btn-a">TAP</span>
+          <span id="label-btn-a">ACTION<br/>BRIBE</span>
+          <span class="btn-sub-status" id="sub-btn-a">AUTO</span>
         </button>
       </div>
     </div>
@@ -93,11 +93,11 @@
     <div id="desktop-keybind-bar">
       <span><span class="key-pill">WASD / Arrows</span>Walk</span>
       <span><span class="key-pill">Shift</span>Sprint</span>
-      <span><span class="key-pill">E / Enter</span>Action</span>
+      <span><span class="key-pill">Walk Into</span>Auto-Pickup / Bribe / Check Door</span>
       <span><span class="key-pill">Space</span>Iron Clench</span>
       <span><span class="key-pill">Q</span>Poker Face</span>
       <span><span class="key-pill">F</span>Elbow Dash</span>
-      <span><span class="key-pill">P / Esc</span>Pause &amp; Guide</span>
+      <span><span class="key-pill">P / Esc</span>Pause</span>
     </div>
 
     <!-- PAUSE & TACTICAL FIELD GUIDE / TOOLTIPS MODAL -->
@@ -113,7 +113,7 @@
         </div>
         <h2 style="margin:4px 0 2px 0;font-size:15px;">How Not to Embarrass Yourself at the Gate</h2>
         <div id="pause-current-tip" style="font-size:10.5px;font-weight:800;color:var(--emerald);margin-bottom:6px;">
-          💡 Current Objective: Slip past security, grab any gear on contact, and check the North stalls!
+          💡 Walk into items to auto-grab, bribe janitors with 🍬 Mints, and bump North stall doors to check them!
         </div>
 
         <!-- Visual Tooltip Cards (Populated from TACTICAL_TOOLTIPS_V2) -->
@@ -122,7 +122,7 @@
         <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;margin-top:10px;border-top:2px dashed var(--ink);padding-top:8px;">
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn-primary" style="background:var(--emerald);color:#fff;" onclick="window.togglePauseModal()">▶ RESUME MISSION</button>
-            <button class="btn-primary" onclick="window.startTutorialLevel()">🎓 REPLAY 30s TUTORIAL</button>
+            <button class="btn-primary" onclick="window.startTutorialLevel()">🎓 REPLAY 20s WARM-UP</button>
             <button class="btn-primary" onclick="window.toggleDesktopTouchOverride()">⌨️/📱 SWITCH UI MODE</button>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -133,12 +133,12 @@
       </div>
     </div>
 
-    <!-- CLEAN, DECLUTTERED BOARDING PASS HOME SCREEN (v2.1) -->
+    <!-- CLEAN, DECLUTTERED BOARDING PASS HOME SCREEN (v2.2) -->
     <div class="modal-overlay" id="menu-modal">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
           <span id="menu-top-tag" style="color:var(--crimson);font-weight:900;font-size:10px;letter-spacing:0.8px;">
-            BOARDING PASS • PRIORITY LAVATORY ACCESS (v2.1)
+            BOARDING PASS • PROGRESSIVE 5-TERMINAL CAMPAIGN (v2.2)
           </span>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span id="menu-tenant-pill" style="font-size:9px;font-weight:900;background:var(--ink);color:var(--amber);padding:2px 6px;border-radius:4px;">
@@ -155,17 +155,17 @@
 
         <h2 id="game-title-heading" style="margin:4px 0 2px 0;font-size:17px;">I Need to Take a Sh!t: Airport Dash</h2>
         <div id="menu-subtitle" style="font-size:10.5px;font-weight:700;margin-bottom:6px;line-height:1.3;">
-          Bad airport food. Five international terminals. Zero unlocked stalls in sight. Keep a poker face past security and reach a working throne before gravity wins.
+          Fast, hilarious stealth-action! Start on the <b>Practice Maps (Terminals 1–3)</b> to master puddles, janitor bribes, and decoys—then survive the packed <b>Changi &amp; Haneda Finales</b>!
         </div>
 
-        <!-- HERO TUTORIAL & PLAYABLE AD CTA (GAME TUTORIAL GUIDE COMPLIANT) -->
+        <!-- HERO TUTORIAL & PLAYABLE AD CTA -->
         <button class="tutorial-hero-btn" onclick="window.startTutorialLevel()">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span>🎓 PLAY 30s INTERACTIVE TUTORIAL — GATE 00: EXPRESS LAYOVER</span>
+            <span>🎓 GATE 00: 20s EXPRESS WARM-UP (PRACTICE CONTROLS &amp; 3 STALLS)</span>
             <span style="background:var(--amber);color:var(--ink);padding:2px 6px;border-radius:4px;font-size:9.5px;" id="tutorial-badge-status">START HERE!</span>
           </div>
           <div style="font-size:9.5px;font-weight:700;color:#d9fbe5;margin-top:2px;">
-            Step-by-step progressive controls • Non-punishing safety net • Unlocks +4s Clock &amp; Free Flip-Flops on Terminal 01!
+            Zero barricades • Walk into items &amp; doors to interact • Unlocks +4s Clock &amp; Free Flip-Flops on Terminal 01!
           </div>
         </button>
 
@@ -237,7 +237,7 @@
         <!-- Classic v1.0 Archive Link & Controls Summary -->
         <div class="archive-bar">
           <span id="menu-controls-hint">🎮 Auto-Detects <b>Desktop WASD / Arrows</b> or <b>Mobile Touch Stick</b> • Press <b>[P]</b> for Field Guide</span>
-          <a class="v1-archive-link" href="./v1/index.html">🕹️ Play Classic v1.0 (With Return to v2.1)</a>
+          <a class="v1-archive-link" href="./v1/index.html">🕹️ Play Classic v1.0 (With Return to v2.2)</a>
         </div>
       </div>
     </div>
@@ -478,7 +478,7 @@
       engine.saveProgress();
       const zoomBtn = document.getElementById("hud-zoom-btn");
       if (zoomBtn) {
-        zoomBtn.textContent = sim.zoomPreset === "wide" ? "🔍 WIDE" : "🔍 CLOSE";
+        zoomBtn.textContent = sim.zoomPreset === "wide" ? "🔍" : "🔎";
       }
       audio.playTutorialDing();
     };
@@ -488,7 +488,7 @@
       const muted = audio.toggleMute();
       const hudBtn = document.getElementById("hud-sfx-btn");
       const menuBtn = document.getElementById("menu-sfx-btn");
-      if (hudBtn) hudBtn.textContent = muted ? "🔇 MUTE" : "🔊 SFX";
+      if (hudBtn) hudBtn.textContent = muted ? "🔇" : "🔊";
       if (menuBtn) menuBtn.textContent = muted ? "🔇 SFX: OFF" : "🔊 SFX: ON";
       if (!muted) audio.playTutorialDing();
     };
@@ -732,13 +732,13 @@
         btn.className = "level-btn";
         btn.onclick = () => window.startLevelByIndex(idx);
         btn.innerHTML = `
-          <div style="display:flex;justify-content:space-between;font-weight:900;font-size:11px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:11px;">
             <span>TERMINAL 0${lvl.num}: ${lvl.iata} — ${lvl.name}</span>
-            <span style="color:var(--crimson);">CLOCK: ${adjPar}s</span>
+            <span style="color:var(--crimson);">${lvl.tierBadge || ""} • CLOCK: ${adjPar}s</span>
           </div>
           <div style="font-size:9.5px;margin-top:2px;font-weight:700;line-height:1.22;">${lvl.sub}</div>
           <div style="font-size:9px;margin-top:2px;color:var(--emerald);font-weight:900;">
-            4-Wing Course (${lvl.pathMeters}m) • ${lvl.stalls.length} Stalls • ${best}${bonusTag}
+            ${lvl.newMechanics || `${lvl.stalls.length} Stalls`} • ${best}${bonusTag}
           </div>
         `;
         list.appendChild(btn);
@@ -821,7 +821,7 @@
       const p = sim.player;
       const lvl = sim.activeLvl;
 
-      document.getElementById("hud-level-label").textContent = `${lvl.iata} | CLOCK`;
+      document.getElementById("hud-level-label").textContent = lvl.iata;
       document.getElementById("hud-timer-val").textContent = `${sim.timerSec.toFixed(1)}s`;
 
       const skipBtn = document.getElementById("hud-skip-tut-btn");
@@ -852,7 +852,7 @@
         sim.worldClock
       );
 
-      // Progressive Button Unlocking during Tutorial (GAME TUTORIAL GUIDE: introduce 1 mechanic at a time)
+      // Progressive Button Unlocking during Tutorial
       const tutStep = sim.isTutorial
         ? TUTORIAL_STEPS_V2[Math.min((sim.tutorialStep || 1) - 1, TUTORIAL_STEPS_V2.length - 1)]
         : null;
@@ -866,7 +866,7 @@
         subA.textContent = "NOW!";
       } else {
         btnA.classList.remove("pulse-ready");
-        subA.textContent = "TAP";
+        subA.textContent = "AUTO";
       }
 
       const btnB = document.getElementById("btn-arcade-b");
@@ -926,16 +926,16 @@
         warnBar.style.display = "none";
       }
 
-      // Contextual Interact Pill
+      // Contextual Interact Pill (Shown when near an interactable or stall)
       const pill = document.getElementById("interact-pill");
       if (sim.nearestInteractable) {
         pill.style.display = "block";
-        pill.textContent = `TAP [A] / PRESS [E]: ${sim.nearestInteractable.label}`;
+        pill.textContent = `BUMP INTO / TAP [A] / [E]: ${sim.nearestInteractable.label}`;
       } else {
         pill.style.display = "none";
       }
 
-      // HUD Stage Objective Bar (Shows progressive tutorial prompt when in Tutorial mode)
+      // Single-line HUD Stage Objective Bar
       const objEl = document.getElementById("objective-bar");
       if (sim.isTutorial && tutStep) {
         const promptText = input.dial.hideTouchOverlay ? tutStep.promptDesktop : tutStep.promptMobile;
@@ -951,25 +951,25 @@
         }
       }
 
-      // Compact Active Status Badges
+      // Ultra-Compact Emoji Status Badges (Inline inside 34px HUD strip)
       const badges = [];
       if (p.pokerFaceTimer > 0) {
-        badges.push(`<span class="badge" style="background:var(--amber);color:#141413;">🎭 POKER FACE</span>`);
+        badges.push(`<span class="badge" style="background:var(--amber);color:#141413;" title="Poker Face Active">🎭</span>`);
       }
       if (p.flipFlops) {
-        badges.push(`<span class="badge" style="background:var(--emerald);">🩴 GRIP SOLES</span>`);
+        badges.push(`<span class="badge" style="background:var(--emerald);" title="Grip Flip-Flops">🩴</span>`);
       }
       if (p.item === "mints") {
-        badges.push(`<span class="badge" style="background:var(--amber);color:#141413;">🍬 MINTS READY</span>`);
+        badges.push(`<span class="badge" style="background:var(--amber);color:#141413;" title="Mints Ready to Bribe Janitor">🍬 BRIBE</span>`);
       }
       if (p.tsaPass) {
-        badges.push(`<span class="badge" style="background:var(--emerald);">🎫 VIP PASS</span>`);
+        badges.push(`<span class="badge" style="background:var(--emerald);" title="VIP Pass">🎫</span>`);
       }
       if (p.clipboardRevealed) {
-        badges.push(`<span class="badge" style="background:var(--emerald);">📋 MAPPED</span>`);
+        badges.push(`<span class="badge" style="background:var(--emerald);" title="Stalls Mapped">📋</span>`);
       }
       if (p.speedBoostTimer > 0) {
-        badges.push(`<span class="badge" style="background:var(--crimson);">🌶️ TURBO</span>`);
+        badges.push(`<span class="badge" style="background:var(--crimson);" title="Spicy Turbo">🌶️</span>`);
       }
       document.getElementById("hud-badges").innerHTML = badges.join("");
     }

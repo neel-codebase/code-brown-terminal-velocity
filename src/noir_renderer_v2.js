@@ -1,9 +1,9 @@
 /**
  * @file noir_renderer_v2.js
- * @version 2.1.0
+ * @version 2.2.0
  * @description Enriched Procedural Architectural Tile Renderer, Articulated Sprites,
  * 36px In-World Johnny Rocketfingers Head, Compact Non-Blocking Speech Bubbles,
- * Wide-Angle Mobile Camera Zoom + Live Corner Mini-Map Radar, Tutorial Visual Clues,
+ * Ultra-Wide Camera Zoom + Compact Mini-Map Radar, Tutorial Visual Clues,
  * and Automatic Hiding of Touch Radials on Desktop Computers.
  */
 
@@ -23,9 +23,9 @@ function getHeadBuffer(size) {
 export function getWorldScale(sim, canvas) {
   const isSmallScreen = Math.min(canvas.width, canvas.height) < 500;
   if (sim.zoomPreset === "wide") {
-    return isSmallScreen ? 12.8 : 14.5; // Shows >2.2x more terminal area on phones!
+    return isSmallScreen ? 11.6 : 13.6; // Ultra-wide view for maximum screen real estate
   }
-  return isSmallScreen ? 16.0 : 18.0;
+  return isSmallScreen ? 14.8 : 16.8;
 }
 
 // ============================================================================
@@ -295,16 +295,16 @@ export function drawComicSpeechBubble(
 }
 
 // ============================================================================
-// 3. LIVE CORNER MINI-MAP RADAR (SOLVES PHONE SCREEN MAP VISIBILITY)
+// 3. LIVE CORNER MINI-MAP RADAR (TUCKED UNDER SINGLE-LINE 36PX HUD)
 // ============================================================================
 function drawMiniMapRadar(ctx, canvas, sim) {
   const lvl = sim.activeLvl;
   if (!lvl) return;
 
-  const mapW = 74;
+  const mapW = 64;
   const mapH = Math.round(mapW * (lvl.world.h / lvl.world.w));
-  const rx = canvas.width - mapW - 10;
-  const ry = 58; // Just below the slim top HUD strip
+  const rx = canvas.width - mapW - 8;
+  const ry = 42; // Tucked right under the single-line 34px HUD strip!
 
   ctx.save();
   ctx.fillStyle = "rgba(20, 20, 19, 0.78)";
@@ -714,14 +714,14 @@ export function renderWorldV2(ctx, canvas, sim, dial) {
       ctx.fillStyle = "#141413";
       ctx.font = "900 9.5px 'Courier New', monospace";
       ctx.textAlign = "center";
-      ctx.fillText("⚠ TAPED OFF BY JANITOR", drawX, drawY - h * 0.5 - 5);
+      ctx.fillText("⚠ JANITOR BARRICADE (🍬 BRIBE / 🗑️ LURE)", drawX, drawY - h * 0.5 - 5);
     } else {
       ctx.fillStyle = "rgba(47, 133, 90, 0.88)";
-      ctx.fillRect(drawX - 48, drawY - 9, 96, 18);
+      ctx.fillRect(drawX - 54, drawY - 9, 108, 18);
       ctx.fillStyle = "#ffffff";
       ctx.font = "900 9.5px 'Courier New', monospace";
       ctx.textAlign = "center";
-      ctx.fillText("🧹 LURED AWAY", drawX, drawY + 3.5);
+      ctx.fillText("🧹 BRIBED / LURED", drawX, drawY + 3.5);
     }
   });
 
@@ -873,14 +873,15 @@ export function renderWorldV2(ctx, canvas, sim, dial) {
   ctx.arc(px + skew * 0.4, py - 18 + crouchY, drawHeadR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // --- C. FLOATING GOLD REWARD FLARES (GAME TUTORIAL GUIDE PRINCIPLE #4) ---
+  // --- C. FLOATING REWARD & DECOY FLARES ---
   sim.rewardFlares.forEach((fl) => {
     const fx = fl.x * SCALE;
     const fy = fl.y * SCALE - 28;
+    const isNegative = fl.label.startsWith("-") || fl.label.includes("LOCKED");
     ctx.save();
     ctx.font = "900 12px 'Courier New', monospace";
     const tw = ctx.measureText(fl.label).width + 14;
-    ctx.fillStyle = "#276749";
+    ctx.fillStyle = isNegative ? "#c53030" : "#276749";
     ctx.strokeStyle = "#fefcbf";
     ctx.lineWidth = 2;
     ctx.beginPath();

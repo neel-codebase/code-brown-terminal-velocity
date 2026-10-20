@@ -45,14 +45,22 @@ export const UI_COPY_V2 = {
     }
   },
   hudObjectives: {
-    stage1:
-      "💡 Tip: Get past the Security Checkpoint! (Grab a Fast-Track Pass to skip the pat-down)",
-    stage2:
-      "💡 Tip: The janitor taped off the restrooms! Bribe him with mints or cause a mess to lure him away.",
-    stage3:
-      "💡 Tip: You're in! Check the stall doors—or peek at the janitor's clipboard—to find an unlocked toilet!"
+    stage1: "🎯 Slip past Security (Walk or [X]/[Q] Poker Face)",
+    stage2: "🎯 Bribe Janitor with 🍬 Mints or Tip 🗑️ Trash Bin!",
+    stage3: "🎯 Check the [🚽 ?] Decoy Stalls to find the Open Throne!"
   }
 };
+
+export const DECOY_BARKS_V2 = [
+  "🔒 OCCUPIED! \"Reading the in-flight magazine—come back Tuesday!\"",
+  "🔒 OUT OF ORDER! \"Someone flushed a duty-free Toblerone!\"",
+  "🔒 OCCUPIED! \"Wait your turn, mate! That vindaloo was lethal!\"",
+  "🔒 LOCKED! \"Zero toilet paper in here—save yourself!\"",
+  "🔒 OCCUPIED! \"Captain speaking... experiencing heavy turbulence!\"",
+  "🔒 SEALED! \"Plumber's on a tea break until Flight 402 boards!\"",
+  "🔒 OCCUPIED! \"Trying to zip my duty-free wetsuit in here!\"",
+  "🔒 JAMMED! \"Brass latch rusted shut since 1998!\""
+];
 
 /**
  * 10-State Johnny Rocketfingers Facial Expression Catalog & Mirror Check Copy
@@ -473,37 +481,23 @@ export const DIALOGUES = {
 export const TUTORIAL_STEPS_V2 = [
   {
     step: 1,
-    title: "STEP 1/5: CORE MOVEMENT",
-    promptMobile: "Drag the (L) Stick North to the glowing marker! (Grab 🩴 Flip-Flops on the left for wet floors)",
-    promptDesktop: "Press [W] or [↑ Arrow] to walk North! (Hold [Shift] to Sprint • Walk over 🩴 Flip-Flops)",
-    unlockedBtns: [] // Introduce 1 mechanic at a time!
+    title: "STEP 1/3",
+    promptMobile: "Drag Stick North! (Walk over 🩴 Flip-Flops on the left)",
+    promptDesktop: "Press [W] / [↑] to move North! ([Shift] Sprints • Grab 🩴 Flip-Flops)",
+    unlockedBtns: []
   },
   {
     step: 2,
-    title: "STEP 2/5: FIRST CHALLENGE — STEALTH",
-    promptMobile: "Sprinting alerts guards! Walk gently past the Guard—or tap [X] POKER FACE!",
-    promptDesktop: "Sprinting alerts guards! Walk past the Guard—or press [Q] for POKER FACE!",
-    unlockedBtns: ["x"]
-  },
-  {
-    step: 3,
-    title: "STEP 3/5: GUT CRAMP DEFENSE",
-    promptMobile: "Stomach rumble! Tap [B] IRON CLENCH (or double-tap stick) to block the cramp!",
-    promptDesktop: "Stomach rumble! Press [SPACE] for IRON CLENCH to freeze the clock & block cramps!",
+    title: "STEP 2/3",
+    promptMobile: "Walk past Guard (or tap [X] Poker Face) & tap [B] Clench on rumbles!",
+    promptDesktop: "Walk past Guard (or [Q] Poker Face) & press [SPACE] Clench on rumbles!",
     unlockedBtns: ["x", "b"]
   },
   {
-    step: 4,
-    title: "STEP 4/5: UNSEAL THE RESTROOM",
-    promptMobile: "Janitor blocking the door! Walk up to the 🗑️ Trash Bin or 🍬 Mints & tap [A] ACTION!",
-    promptDesktop: "Janitor blocking the door! Walk up to the 🗑️ Trash Bin or 🍬 Mints & press [E]!",
-    unlockedBtns: ["x", "b", "a"]
-  },
-  {
-    step: 5,
-    title: "STEP 5/5: CLAIM THE OPEN THRONE!",
-    promptMobile: "Doorway clear! Walk up to the [🚽 ?] Mystery Stalls & tap [A] to find the unlocked toilet!",
-    promptDesktop: "Doorway clear! Walk up to the [🚽 ?] Mystery Stalls & press [E] to win!",
+    step: 3,
+    title: "STEP 3/3",
+    promptMobile: "Walk up to the 3 [🚽 ?] Mystery Stalls & tap [A] to find the open toilet!",
+    promptDesktop: "Walk up to the 3 [🚽 ?] Mystery Stalls (or press [E]) to find the open toilet!",
     unlockedBtns: ["x", "b", "a", "y"]
   }
 ];
